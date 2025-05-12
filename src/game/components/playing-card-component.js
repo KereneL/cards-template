@@ -7,6 +7,9 @@ export class PlayingCardComponent extends BaseComponent {
     this.value = value;
   }
 
+  get textureKey() {
+    return `${this.value.textureKeyName}\n${this.suit.textureKeyName}`
+  }
   get rank() {
     return this.value.rankAs;
   }

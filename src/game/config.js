@@ -39,8 +39,9 @@ export const CARD_RECT_STYLE = {
     HEIGHT_SCALE: 3.5,
 }
 export const CARD_TEXT_STYLE = {
-    fontFamily: 'Lucida Console',
-    fontStyle: 'bold',
+    fontFamily: 'dicier',
+    //fontFamily: 'Lucida Console',
+    //fontStyle: 'bold',
     align: 'left',
 }
 export const SUIT_COLOR_TYPES = {
@@ -55,6 +56,7 @@ export const CARD_VALUES = {
     ACE: {
         label: 'A',
         textualName: 'Ace',
+        textureKeyName: 'ACE',
         rankAs: 14,
         sequenceAs: [14, 1],
         isRoyal: false,
@@ -63,6 +65,7 @@ export const CARD_VALUES = {
     TWO: {
         label: '2',
         textualName: 'Two',
+        textureKeyName: 'TWO',
         rankAs: 2,
         sequenceAs: [2],
         isRoyal: false,
@@ -71,6 +74,7 @@ export const CARD_VALUES = {
     THREE: {
         label: '3',
         textualName: 'Three',
+        textureKeyName: 'THREE',
         rankAs: 3,
         sequenceAs: [3],
         isRoyal: false,
@@ -79,6 +83,7 @@ export const CARD_VALUES = {
     FOUR: {
         label: '4',
         textualName: 'Four',
+        textureKeyName: 'FOUR',
         rankAs: 4,
         sequenceAs: [4],
         isRoyal: false,
@@ -87,6 +92,7 @@ export const CARD_VALUES = {
     FIVE: {
         label: '5',
         textualName: 'Five',
+        textureKeyName: 'FIVE',
         rankAs: 5,
         sequenceAs: [5],
         isRoyal: false,
@@ -95,6 +101,7 @@ export const CARD_VALUES = {
     SIX: {
         label: '6',
         textualName: 'Six',
+        textureKeyName: 'SIX',
         rankAs: 6,
         sequenceAs: [6],
         isRoyal: false,
@@ -103,6 +110,7 @@ export const CARD_VALUES = {
     SEVEN: {
         label: '7',
         textualName: 'Seven',
+        textureKeyName: 'SEVEN',
         rankAs: 7,
         sequenceAs: [7],
         isRoyal: false,
@@ -111,6 +119,7 @@ export const CARD_VALUES = {
     EIGHT: {
         label: '8',
         textualName: 'Eight',
+        textureKeyName: 'EIGHT',
         rankAs: 8,
         sequenceAs: [8],
         isRoyal: false,
@@ -119,6 +128,7 @@ export const CARD_VALUES = {
     NINE: {
         label: '9',
         textualName: 'Nine',
+        textureKeyName: 'NINE',
         rankAs: 9,
         sequenceAs: [9],
         isRoyal: false,
@@ -127,6 +137,7 @@ export const CARD_VALUES = {
     TEN: {
         label: '10',
         textualName: 'Ten',
+        textureKeyName: 'TEN',
         rankAs: 10,
         sequenceAs: [10],
         isRoyal: false,
@@ -135,6 +146,7 @@ export const CARD_VALUES = {
     JACK: {
         label: 'J',
         textualName: 'Jack',
+        textureKeyName: 'JACK',
         rankAs: 10,
         sequenceAs: [11],
         isRoyal: true,
@@ -143,6 +155,7 @@ export const CARD_VALUES = {
     QUEEN: {
         label: 'Q',
         textualName: 'Queen',
+        textureKeyName: 'QUEEN',
         rankAs: 10,
         sequenceAs: [12],
         isRoyal: true,
@@ -151,6 +164,7 @@ export const CARD_VALUES = {
     KING: {
         label: 'K',
         textualName: 'King',
+        textureKeyName: 'KING',
         rankAs: 10,
         sequenceAs: [13],
         isRoyal: true,
@@ -161,24 +175,28 @@ export const CARD_SUITES = {
     SPADES: {
         label: '♠',
         textualName: 'Spades',
+        textureKeyName: 'SPADES',
         gameColor: GAME_COLORS.SPADES,
         suitColorType: SUIT_COLOR_TYPES.BLACK,
     },
     HEARTS: {
         label: '♥',
         textualName: 'Hearts',
+        textureKeyName: 'HEARTS',
         gameColor: GAME_COLORS.HEARTS,
         suitColorType: SUIT_COLOR_TYPES.RED,
     },
     DIAMONDS: {
         label: '♦',
         textualName: 'Diamonds',
+        textureKeyName: 'DIAMONDS',
         gameColor: GAME_COLORS.DIAMONDS,
         suitColorType: SUIT_COLOR_TYPES.RED,
     },
     CLUBS: {
         label: '♣',
         textualName: 'Clubs',
+        textureKeyName: 'CLUBS',
         gameColor: GAME_COLORS.CLUBS,
         suitColorType: SUIT_COLOR_TYPES.BLACK,
     }

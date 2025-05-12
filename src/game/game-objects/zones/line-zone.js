@@ -41,6 +41,8 @@ layoutCards() {
       inputComp.currentY = card.y;
       inputComp.targetX = targetX;
       inputComp.targetY = targetY;
+
+      inputComp.shouldUpdate = true;
     }
 
     card.emit?.('positionChanged');

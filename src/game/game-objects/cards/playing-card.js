@@ -2,7 +2,6 @@ import { BaseCard } from './base-card';
 import { PlayingCardComponent } from '../../components/playing-card-component';
 import { CARD_RECT_STYLE, CARD_TEXT_STYLE } from '../../config';
 import { InputCardComponent } from '../../components/input-component';
-
 export class PlayingCard extends BaseCard {
     constructor({ scene, cardSuit, cardValue }) {
         super({ scene });
@@ -19,28 +18,28 @@ export class PlayingCard extends BaseCard {
 
         const textStyle = {
             ...CARD_TEXT_STYLE,
-            fontSize: CARD_BASE_SIZE * 0.75,
+            fontSize: Math.round(CARD_BASE_SIZE * 0.75),
             lineSpacing: -CARD_BASE_SIZE * 0.075,
             color: playingCardComp.suit.gameColor.hex
         }
 
         const textureKey = `_${playingCardComp.label}`;
         if (!this.scene.textures.exists(textureKey)) {
-            const tempText = this.scene.add.text(0, 0, playingCardComp.label, textStyle).setOrigin(0);
+            const tempText = this.scene.add.text(0, 0, playingCardComp.textureKey, textStyle).setOrigin(0);
             const rt = this.scene.make.renderTexture({
                 x: 0,
                 y: 0,
                 width: tempText.width,
                 height: tempText.height,
             }, false);
-            rt.draw(tempText, 0, 0);
+            rt.draw(tempText, 2, 4);
             rt.saveTexture(textureKey);
             tempText.destroy();
             rt.destroy();
         }
 
-        const upsideX = this.cardBody.width / 2 - 2;
-        const upsideY = this.cardBody.height / 2 - 1;
+        const upsideX = this.cardBody.width / 2 + 1;
+        const upsideY = this.cardBody.height / 2 + 2;
         const uprightX = -upsideX;
         const uprightY = -upsideY;
         this.textImageUpright = new Phaser.GameObjects.Image(this.scene, uprightX, uprightY, textureKey)

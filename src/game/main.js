@@ -12,8 +12,8 @@ const config = {
     width: 1024,
     height: 768,
     parent: 'game-container',
-    //pixelArt: true,
-    roundPixels: true,
+    pixelArt: true,
+    //roundPixels: true,
     backgroundColor: '#028af8',
     scale: {
         autoCenter: Phaser.Scale.CENTER_BOTH,

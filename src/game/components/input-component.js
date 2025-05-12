@@ -9,7 +9,10 @@ export class InputCardComponent extends BaseComponent {
 
     this.hoverable = config.hoverable
     this.draggable = config.draggable
+    this.shouldUpdate = true;
+    this.physicsEnabled = true;
     this.isDragging = false;
+
     this.targetX = card.x;
     this.targetY = card.y;
     this.currentX = card.x;
@@ -35,8 +38,8 @@ export class InputCardComponent extends BaseComponent {
     }, this);
   }
 
-refreshPosition() {
-      this.currentX = this.gameObject.x;
-      this.currentY = this.gameObject.y;
-}
+  refreshPosition() {
+    this.currentX = this.gameObject.x;
+    this.currentY = this.gameObject.y;
+  }
 }

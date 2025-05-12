@@ -5,7 +5,7 @@ import { PlayingCardComponent } from '../components/playing-card-component';
 import { InputCardComponent } from '../components/input-component';
 import { DropZoneComponent } from '../components/layout-comps/drop-zone-component';
 import { LineZone } from '../game-objects/zones/line-zone';
-
+import { CardPhysicsSystem } from '../utils'
 export class Game extends Phaser.Scene {
     constructor() {
         super('Game');
@@ -91,12 +91,12 @@ export class Game extends Phaser.Scene {
                 duration: SHORT_DURATION,
             })
         }, this);
-
         this.input.on('dragstart', (pointer, gameObject) => {
             const comp = InputCardComponent.getComp(gameObject);
             if (!comp) return;
 
             comp.isDragging = true;
+            comp.shouldUpdate = true;
             comp.lastPointerX = pointer.x;
 
             const topDepth = Math.max(...this.activeCards.map(card => card.depth || 0));
@@ -119,22 +119,20 @@ export class Game extends Phaser.Scene {
                 });
             }
         }, this);
-
         this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
             const comp = InputCardComponent.getComp(gameObject);
             if (!comp) return;
 
             comp.targetX = dragX;
             comp.targetY = dragY;
-        }, this);
 
+        }, this);
         this.input.on('drop', (pointer, gameObject, dropZone) => {
             const zoneComp = DropZoneComponent.getComp(dropZone);
             if (!zoneComp) return;
 
             zoneComp.handleDrop(gameObject);
         });
-
         this.input.on('dragend', (pointer, gameObject, dropped) => {
             const comp = InputCardComponent.getComp(gameObject);
             if (!comp) return;
@@ -143,86 +141,96 @@ export class Game extends Phaser.Scene {
             comp.rotationTarget = 0;
 
             if (!dropped) {
-                comp.targetX = gameObject.input.dragStartX;
-                comp.targetY = gameObject.input.dragStartY;
-                this.tweens.add({
-    targets: gameObject,
-    x: {
-      getStart: () => comp.dragStartX - 10,
-      getEnd: () => comp.dragStartX + 10,
-    },
-    ease: 'Sine.easeInOut',
-    duration: 100,
-    yoyo: true,
-    repeat: 2,
-    onComplete: () => {
-      // restore to targetX after shake
-      gameObject.setX(comp.dragStartX);
-    }
-  });
-            }
+                // Lock physics system temporarily
+                comp.physicsEnabled = false;
 
-            this.tweens.add({
-                targets: gameObject,
-                scale: IDLE_SCALE,
-                ease: EASE,
-                duration: SHORT_DURATION,
-            });
+                // Stop any system-based interpolation
+                comp.targetX = comp.currentX;
+                comp.targetY = comp.currentY;
+
+                // Store original x position
+                const originalX = comp.currentX;
+
+                // Shake the GameObject's position directly
+                this.tweens.add({
+                    targets: gameObject,
+                    x: originalX + 10, // first wiggle
+                    duration: 50,
+                    ease: 'Sine.easeInOut',
+                    yoyo: true,
+                    repeat: 1,
+                    onComplete: () => {
+                        // Restore position
+                        gameObject.setX(originalX);
+
+                        // Reset movement target and re-enable physics
+                        comp.targetX = gameObject.input.dragStartX
+                        comp.targetY = gameObject.input.dragStartY
+                        comp.shouldUpdate = true;
+                        comp.physicsEnabled = true;
+                    }
+                });
+            }
 
             if (gameObject.cardShadow) {
                 this.tweens.add({
                     targets: gameObject.cardShadow,
                     alpha: 0,
-                    scale: IDLE_SCALE,
-                    ease: EASE,
+                    scale: DRAGGED_SCALE,
+                    ease: 'Quad.easeOut',
                     duration: SHORT_DURATION,
                 });
             }
+
         }, this);
 
-        this.time.addEvent({
-            loop: true,
-            delay: 16,
-            callback: () => {
-                for (const card of this.activeCards) {
-                    const comp = InputCardComponent.getComp(card);
-                    if (!comp) continue;
+        // this.timedEvent = this.time.addEvent({
+        //     loop: true,
+        //     delay: 16,
+        //     callback: () => {
+        //         for (const card of this.activeCards) {
+        //             const comp = InputCardComponent.getComp(card);
+        //             if (!comp) continue;
 
-                    const {
-                        DAMP_FACTOR, IDLE_THRESHOLD, MAX_ROTATE,
-                        ROTATION_EASE_SOFT, ROTATION_EASE_HARD,
-                    } = CARD_TWEENS;
+        //             const {
+        //                 DAMP_FACTOR, IDLE_THRESHOLD, MAX_ROTATE,
+        //                 ROTATION_EASE_SOFT, ROTATION_EASE_HARD,
+        //             } = CARD_TWEENS;
 
-                    comp.currentX = Phaser.Math.Linear(comp.currentX, comp.targetX, 0.25);
-                    comp.currentY = Phaser.Math.Linear(comp.currentY, comp.targetY, 0.25);
-                    card.setPosition(comp.currentX, comp.currentY);
+        //             comp.currentX = Phaser.Math.Linear(comp.currentX, comp.targetX, 0.25);
+        //             comp.currentY = Phaser.Math.Linear(comp.currentY, comp.targetY, 0.25);
+        //             card.setPosition(comp.currentX, comp.currentY);
 
-                    if (comp.isDragging) {
-                        const pointer = this.input.activePointer;
-                        if (comp.lastPointerX !== null) {
-                            const deltaX = pointer.x - comp.lastPointerX;
-                            comp.velocityX = Phaser.Math.Linear(comp.velocityX, deltaX, 0.5);
-                        }
-                        comp.lastPointerX = pointer.x;
+        //             if (comp.isDragging) {
+        //                 const pointer = this.input.activePointer;
+        //                 if (comp.lastPointerX !== null) {
+        //                     const deltaX = pointer.x - comp.lastPointerX;
+        //                     comp.velocityX = Phaser.Math.Linear(comp.velocityX, deltaX, 0.5);
+        //                 }
+        //                 comp.lastPointerX = pointer.x;
 
-                        let targetRotation = 0;
-                        if (Math.abs(comp.velocityX) > IDLE_THRESHOLD) {
-                            targetRotation = Phaser.Math.Clamp(comp.velocityX * DAMP_FACTOR, -MAX_ROTATE, MAX_ROTATE);
-                        }
+        //                 let targetRotation = 0;
+        //                 if (Math.abs(comp.velocityX) > IDLE_THRESHOLD) {
+        //                     targetRotation = Phaser.Math.Clamp(comp.velocityX * DAMP_FACTOR, -MAX_ROTATE, MAX_ROTATE);
+        //                 }
 
-                        comp.currentRotation = Phaser.Math.Linear(comp.currentRotation, targetRotation, ROTATION_EASE_SOFT);
-                        card.setRotation(comp.currentRotation);
+        //                 comp.currentRotation = Phaser.Math.Linear(comp.currentRotation, targetRotation, ROTATION_EASE_SOFT);
+        //                 card.setRotation(comp.currentRotation);
 
-                        if (Math.abs(comp.velocityX) < IDLE_THRESHOLD && Math.abs(comp.currentRotation) < 0.01) {
-                            comp.currentRotation = 0;
-                            card.setRotation(0);
-                        }
-                    } else {
-                        comp.currentRotation = Phaser.Math.Linear(comp.currentRotation, comp.rotationTarget, ROTATION_EASE_HARD);
-                        card.setRotation(comp.currentRotation);
-                    }
-                }
-            }
-        });
+        //                 if (Math.abs(comp.velocityX) < IDLE_THRESHOLD && Math.abs(comp.currentRotation) < 0.01) {
+        //                     comp.currentRotation = 0;
+        //                     card.setRotation(0);
+        //                 }
+        //             } else {
+        //                 comp.currentRotation = Phaser.Math.Linear(comp.currentRotation, comp.rotationTarget, ROTATION_EASE_HARD);
+        //                 card.setRotation(comp.currentRotation);
+        //             }
+        //         }
+        //     }
+        // });
+    }
+
+    update() {
+        CardPhysicsSystem(this)
     }
 }
