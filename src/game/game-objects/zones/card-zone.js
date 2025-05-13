@@ -27,7 +27,7 @@ export class CardZone extends Phaser.GameObjects.Container {
   }
 
   setupInteractiveZone() {
-    this.phaserZone = this.scene.add.zone(0, 0, this.width, this.height)
+    this.phaserZone = this.scene.add.zone(0, 0, this.width, this.height).setDepth(-100)
       .setOrigin(0.5)
       .setInteractive({ dropZone: true });
 
