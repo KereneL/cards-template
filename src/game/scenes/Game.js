@@ -101,6 +101,7 @@ export class Game extends Phaser.Scene {
 
             comp.originalZone = gameObject.parentZone;
             comp.originalZone?.handleDragStart?.(gameObject);
+            this.children.bringToTop(comp.originalZone)
             gameObject.setDepth(999)
             comp.originalZone.sortChildren('depth')
 
