@@ -4,7 +4,7 @@ import { InputCardComponent } from '../../components/input-component';
 import { BaseCard } from '../cards/base-card';
 import { CARD_RECT_STYLE, CARD_TWEENS } from '../../config';
 
-export class BaseZone extends Phaser.GameObjects.Container {
+export class CardZone extends Phaser.GameObjects.Container {
   constructor(scene, x, y, width, height, config = {}) {
     super(scene, x, y);
 
@@ -35,77 +35,84 @@ export class BaseZone extends Phaser.GameObjects.Container {
     this.add(this.phaserZone);
     this.phaserZone.parentContainer = this;
   }
-  handleDragStart(gameObject) {
-    const comp = InputCardComponent.getComp(gameObject);
-    if (!comp || !this.cards.includes(gameObject)) return;
+handleDragStart(card) {
+  const comp = InputCardComponent.getComp(card);
+  if (!comp || !this.cards.includes(card)) return;
 
-    const index = this.cards.indexOf(gameObject);
+  this._originCard = card;
+  this._cueIsInsert = false;
+  this._cueIndex = this.cards.indexOf(card);
 
-      gameObject.setDepth(9999); // Arbitrary high number
+  this.cueCard.setPosition(card.x, card.y);
+  this.cueCard.setDepth(9999);
+  this.cueCard.visible = true;
+
+  card.setDepth(9999);
   this.sortChildren();
-  
-    this._originCard = gameObject;
-    this._cueIndex = index;
-    this._cueIsInsert = false;
-    this.cueCard.setPosition(gameObject.x, gameObject.y);
-    this.cueCard.setDepth(gameObject.depth);
-    this.cueCard.visible = true;
 
-    this.showCueCard();
-  }
-  handleDragEnter(gameObject) {
-    const comp = InputCardComponent.getComp(gameObject);
-    const fromZone = comp?.originalZone;
+  this.showCueCard();
+}
+handleDragEnter(card) {
+  const comp = InputCardComponent.getComp(card);
+  const fromZone = comp?.originalZone;
 
-    const index = this.getDropCueIndex(gameObject, fromZone);
+  if (!comp) return;
 
-    if (index === null) return;
+  const index = this.getDropCueIndex(card, fromZone);
+  if (index === null) return;
 
-    this._cueIndex = index;
+  this._cueIndex = index;
+  this._cueIsInsert = fromZone !== this;
+  this.showCueCard();
+}
+handleDragOver(card) {
+  const comp = InputCardComponent.getComp(card);
+  const fromZone = comp?.originalZone;
+
+  if (!comp) return;
+
+  const newIndex = this.getDropCueIndex(card, fromZone);
+  if (newIndex === null) return;
+
+  if (newIndex !== this._cueIndex) {
+    this._cueIndex = newIndex;
     this._cueIsInsert = fromZone !== this;
     this.showCueCard();
   }
-  handleDragOver(gameObject) {
-    const comp = InputCardComponent.getComp(gameObject);
-    const fromZone = comp?.originalZone;
+}
+handleDragLeave(card) {
+  const comp = InputCardComponent.getComp(card);
+  if (!comp) return;
 
-    const index = this.getDropCueIndex(gameObject, fromZone);
-
-    if (index === null) return;
-
-    if (this._cueIndex !== index) {
-      this._cueIndex = index;
-      this.showCueCard();
-    }
+  const fromZone = comp.originalZone;
+  if (fromZone !== this) {
+    this.hideCueCard(); 
   }
-  handleDragLeave(gameObject) {
-    const comp = InputCardComponent.getComp(gameObject);
-    const fromZone = comp?.originalZone;
+}
+handleDrop(card) {
+  const comp = InputCardComponent.getComp(card);
+  const fromZone = comp?.originalZone;
 
-    if (this !== fromZone) {
-      this.hideCueCard(); // no-op drop or invalid
-      return;
-    }
-  }
-  handleDrop(gameObject) {
-    const comp = InputCardComponent.getComp(gameObject);
-    const fromZone = comp?.originalZone;
+  if (!comp || this._cueIndex === null) return;
 
-    if (this._cueIndex === null || this === fromZone) {
-      this.hideCueCard(); // no-op drop or invalid
-      return;
-    }
+  const isSameZone = this === fromZone;
 
-    this.removeCard(gameObject);
-    this.cards.splice(this._cueIndex, 0, gameObject);
-
-    this.add(gameObject);
-    gameObject.parentZone = this;
-    gameObject.parentContainer = this;
-
+  if (isSameZone && !this._cueIsInsert) {
     this.hideCueCard();
-    this.layoutCards();
+    return;
   }
+
+  this.removeCard(card);
+
+  this.cards.splice(this._cueIndex, 0, card);
+  this.add(card);
+
+  card.parentZone = this;
+  card.parentContainer = this;
+
+  this.hideCueCard();
+  this.layoutCards();
+}
   createCueCard() {
     this.cueCard = new BaseCard({ scene: this.scene });
     this.cueCard.setAlpha(0.5);
@@ -118,7 +125,6 @@ export class BaseZone extends Phaser.GameObjects.Container {
   }
   getDropCueIndex(card, fromZone) {
     if (fromZone === this) {
-      // Same zone → no visual cue or change needed
       return null;
     }
 
@@ -126,7 +132,6 @@ export class BaseZone extends Phaser.GameObjects.Container {
       return this.calculateInsertIndex(card);
     }
 
-    // Not sortable: treat as shift/push
     return this.defaultCueMode === 'shift' ? 0 : this.cards.length;
   }
   showCueCard() {
@@ -272,7 +277,6 @@ export class BaseZone extends Phaser.GameObjects.Container {
       }
       layoutIndex++;
     }
-    // Special case: cue at the very end
     if (this.cueCard.visible && this._cueIndex === this.cards.length) {
       const cueX = startX + layoutIndex * spacing;
       this.cueCard.setPosition(cueX, -10);
