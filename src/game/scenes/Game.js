@@ -18,12 +18,13 @@ export class Game extends Phaser.Scene {
         this.activeCards = [];
         this.createDeck();
         this.deck.shuffle();
-        this.enemy = new CardZone(this, 512, 250, 600, 150, {defaultCueMode: 'push'});
-        this.tableu = new CardZone(this, 512, 425, 600, 150, {defaultCueMode: 'shift'} );
-        this.hand = new CardZone(this, 512, 600, 600, 150, {defaultCueMode: 'push'});
+        this.enemy = new CardZone(this, 512, 125, 600, 150, {name: 'Enemy Sortable', defaultCueMode: 'sortable'});
+        this.tableu = new CardZone(this, 512, 300, 600, 150, {name: 'Shift Only', defaultCueMode: 'shift'} );
+        this.tableu = new CardZone(this, 512, 475, 600, 150, {name: 'Push Only', defaultCueMode: 'push'} );
+        this.hand = new CardZone(this, 512, 650, 600, 150, {name: 'Player Sortable', defaultCueMode: 'sortable'});
 
         this.dealSomeCards(10,  this.hand);
-        //this.dealSomeCards(10,  this.enemy);
+        this.dealSomeCards(10,  this.enemy);
 
         this.applyListeners();
     }
@@ -36,8 +37,12 @@ export class Game extends Phaser.Scene {
         const deckCards = this.deck.getChildren();
 
         for (let i = 0; i < howManyCards; i++) {
-            const card = deckCards.pop()
-            selected.push(card);
+            if (deckCards.length > 0) {
+                const card = deckCards.pop()
+                selected.push(card);
+            } else {
+                break;
+            }
         }
 
         Phaser.Utils.Array.StableSort(selected, (a, b) => {

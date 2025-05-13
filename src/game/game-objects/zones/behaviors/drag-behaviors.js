@@ -61,27 +61,27 @@ export function onDragEnd(pointer, gameObject, dropped) {
     comp.isDragging = false;
     comp.rotationTarget = 0;
 
-    const originZone = comp.originalZone;
+    const originalZone = comp.originalZone;
 
-    if (!dropped && originZone) {
+    if (!dropped && originalZone) {
 
         // ❌ Remove cueCard if it's still in the array
-        const cueIdx = originZone.cards.indexOf(originZone.cueCard);
+        const cueIdx = originalZone.cards.indexOf(originalZone.cueCard);
         if (cueIdx !== -1) {
-            originZone.cards.splice(cueIdx, 1);
+            originalZone.cards.splice(cueIdx, 1);
         }
 
-        const index = originZone.cards.indexOf(gameObject);
+        const index = originalZone.cards.indexOf(gameObject);
         if (index === -1) {
-            const restoreIndex = originZone.cueIndex ?? originZone.cards.length;
-            originZone.cards.splice(restoreIndex, 0, gameObject);
-            originZone.add(gameObject);
+            const restoreIndex = originalZone.cueIndex ?? originalZone.cards.length;
+            originalZone.cards.splice(restoreIndex, 0, gameObject);
+            originalZone.add(gameObject);
         }
 
-        gameObject.parentZone = originZone;
-        gameObject.parentContainer = originZone;
+        gameObject.parentZone = originalZone;
+        gameObject.parentContainer = originalZone;
 
-        originZone.layoutCards();
+        originalZone.layoutCards();
 
         comp.physicsEnabled = false;
         comp.targetX = comp.currentX;
@@ -93,14 +93,15 @@ export function onDragEnd(pointer, gameObject, dropped) {
             comp.targetY = gameObject.input.dragStartY;
             comp.shouldUpdate = true;
             comp.physicsEnabled = true;
-            originZone.hideCueCard?.();
-            originZone.originCard = null;
-            originZone.cueIndex = null;
+            originalZone.hideCueCard?.();
+            originalZone.originalCard = null;
+            originalZone.cueIndex = null;
+            originalZone.originalCueIndex = null;
         })
     } else {
-        originZone?.hideCueCard?.();
-        originZone.originCard = null;
-        originZone.cueIndex = null;
+        originalZone?.hideCueCard?.();
+        originalZone.originalCard = null;
+        originalZone.cueIndex = null;
     }
     gameObject.scaleAfterDrag()
 }

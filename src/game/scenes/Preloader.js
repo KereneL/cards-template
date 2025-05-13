@@ -31,7 +31,8 @@ export class Preloader extends Scene
     {
         //  Load the assets for the game - Replace with your own assets
 
-        this.load.font('dicier', 'Dicier-Pixel.otf');
+        this.load.font('dicier', './fonts/Dicier-Pixel.otf');
+        this.load.font('pixellari', './fonts/Pixellari.ttf');
 
     }
 
