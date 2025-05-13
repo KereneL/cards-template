@@ -44,9 +44,8 @@ export function onDrop(pointer, gameObject, dropZone) {
     const origin = comp?.originalZone;
 
     const isSameZone = container === origin;
-    const isSorted = container.playerSortable;
 
-    if (!isSorted && isSameZone) {
+    if (isSameZone) {
         this.input.emit('dragend', pointer, gameObject, false); // force revert
         return;
     }
@@ -66,9 +65,15 @@ export function onDragEnd(pointer, gameObject, dropped) {
 
     if (!dropped && originZone) {
 
+        // ❌ Remove cueCard if it's still in the array
+        const cueIdx = originZone.cards.indexOf(originZone.cueCard);
+        if (cueIdx !== -1) {
+            originZone.cards.splice(cueIdx, 1);
+        }
+
         const index = originZone.cards.indexOf(gameObject);
         if (index === -1) {
-            const restoreIndex = originZone._cueIndex ?? originZone.cards.length;
+            const restoreIndex = originZone.cueIndex ?? originZone.cards.length;
             originZone.cards.splice(restoreIndex, 0, gameObject);
             originZone.add(gameObject);
         }
@@ -89,12 +94,13 @@ export function onDragEnd(pointer, gameObject, dropped) {
             comp.shouldUpdate = true;
             comp.physicsEnabled = true;
             originZone.hideCueCard?.();
-            originZone._originCard = null;
-            originZone._cueIndex = null;
+            originZone.originCard = null;
+            originZone.cueIndex = null;
         })
     } else {
         originZone?.hideCueCard?.();
-        originZone._cueIndex = null;
+        originZone.originCard = null;
+        originZone.cueIndex = null;
     }
     gameObject.scaleAfterDrag()
 }

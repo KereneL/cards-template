@@ -15,25 +15,28 @@ export class Game extends Phaser.Scene {
         this.add.image(512, 384, 'background').setAlpha(0.25);
         this.input.dragDistanceThreshold = 2;
         this.isDragging = false;
+        this.activeCards = [];
         this.createDeck();
         this.deck.shuffle();
-        this.enemy = new CardZone(this, 512, 250, 600, 150, {defaultCueMode: 'shift'});
-        this.tableu = new CardZone(this, 512, 425, 600, 150, {defaultCueMode: 'push'} );
-        this.hand = new CardZone(this, 512, 600, 600, 150, {defaultCueMode: 'sortable'});
-        
-        this.dealSomeCards(12);
+        this.enemy = new CardZone(this, 512, 250, 600, 150, {defaultCueMode: 'push'});
+        this.tableu = new CardZone(this, 512, 425, 600, 150, {defaultCueMode: 'shift'} );
+        this.hand = new CardZone(this, 512, 600, 600, 150, {defaultCueMode: 'push'});
+
+        this.dealSomeCards(10,  this.hand);
+        //this.dealSomeCards(10,  this.enemy);
+
         this.applyListeners();
     }
     createDeck() {
         const deckCardsArr = createRegularDeck(this);
         this.deck = new BaseDeck(this, deckCardsArr);
     }
-    dealSomeCards(howManyCards) {
+    dealSomeCards(howManyCards, zone) {
         const selected = [];
         const deckCards = this.deck.getChildren();
 
         for (let i = 0; i < howManyCards; i++) {
-            const card = deckCards[i];
+            const card = deckCards.pop()
             selected.push(card);
         }
 
@@ -45,10 +48,11 @@ export class Game extends Phaser.Scene {
 
         for (const card of selected) {
             card.addComponent(InputCardComponent);
-            this.hand.addCard(card);
+            zone.addCard(card);
         }
 
-        this.activeCards = selected;
+        this.activeCards.push(...selected);
+        
     }
     applyListeners() {
         this.input.on('gameobjectover', gameObjectOver, this);
