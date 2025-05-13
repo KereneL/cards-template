@@ -37,6 +37,7 @@ export const CARD_RECT_STYLE = {
     CARD_STROKE_WIDTH: 2,
     WIDTH_SCALE: 2.5,
     HEIGHT_SCALE: 3.5,
+    CUE_ALPHA: 0.5
 }
 export const CARD_TEXT_STYLE = {
     fontFamily: 'dicier',

@@ -17,6 +17,7 @@ export class InputCardComponent extends BaseComponent {
     this.targetY = card.y;
     this.currentX = card.x;
     this.currentY = card.y;
+    this.originalZone = null;
     this.currentRotation = 0;
     this.rotationTarget = 0;
     this.velocityX = 0;
@@ -41,5 +42,6 @@ export class InputCardComponent extends BaseComponent {
   refreshPosition() {
     this.currentX = this.gameObject.x;
     this.currentY = this.gameObject.y;
+    this.physicsEnabled = true;
   }
 }

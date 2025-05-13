@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { CARD_SUITES, CARD_VALUES } from '../config'
-import { PlayingCard } from './cards/playing-card';
+import { CARD_SUITES, CARD_VALUES } from '../../config'
+import { PlayingCard } from '../cards/playing-card';
 
 export function createRegularDeck(scene) {
     const deckArray = [];

@@ -10,7 +10,7 @@ export class BaseCard extends Phaser.GameObjects.Container {
     this.createCardShadow();
     this.createCardBody();
 
-    this.on('addedtoscene', function (){
+    this.once('addedtoscene', function (){
       for (const comp of this.components) {
         if (typeof comp.init === 'function') {
           comp.init();
