@@ -22,19 +22,19 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.background = scene.add.rectangle(0, 0, width, height, 0x000000, 0.1)
       .setOrigin(0.5)
       .setDepth(-100);
-      this.add(this.background);
-    if (config.name){
-     const {width:boundsWidth, height:boundsHeight } = this.getBounds()
-     const textX = -boundsWidth/2 + 4
-     const textY = -boundsHeight/2 + 4
-      this.text = scene.add.text( textX, textY , config.name, {
-        fontFamily: 'pixellari'
+    this.add(this.background);
+    if (config.name) {
+      const { width: boundsWidth, height: boundsHeight } = this.getBounds()
+      const textX = -boundsWidth / 2 + 4
+      const textY = -boundsHeight / 2 + 4
+      this.text = scene.add.text(textX, textY, config.name, {
+        fontFamily: 'pixellari',
+        fontSize: 16 * 1.5,
       })
-      .setOrigin(0)
-      .setDepth(-90);
+        .setOrigin(0)
+        .setDepth(-90);
       this.add(this.text);
     }
-
 
     this.createCueCard();
     this.setupInteractiveZone();
@@ -58,25 +58,27 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.cueIsInsert = false;
     this.cueIndex = this.cards.indexOf(card);
     this.originalCueIndex = this.cueIndex;
+
     this.cueCard.setPosition(card.x, card.y);
 
     const i = this.cards.indexOf(card);
-    if (i !== -1) this.cards.splice(i, 1);
-    this.cards.splice(this.cueIndex, 0, this.cueCard);
+    if (i !== -1) this.cards.splice(i, 1);           // remove dragged card
+    this.cards.splice(this.cueIndex, 0, this.cueCard); // insert cue exactly where card was
 
     card.setDepth(9999);
-    this.showCueCard();
     this.sortChildren();
+    this.showCueCard();
   }
 
   handleDragEnter(card) {
     const comp = InputCardComponent.getComp(card);
-    const originalZone = comp?.originalZone;
-
     if (!comp) return;
+    const originalZone = comp?.originalZone;
+    if (originalZone === this) return;
 
     const index = this.getDropCueIndex(card, originalZone);
     if (index === null) return;
+
     this.cueIndex = index;
     this.cueIsInsert = originalZone !== this;
     const dragIndex = this.cards.indexOf(card);
@@ -87,6 +89,7 @@ export class CardZone extends Phaser.GameObjects.Container {
     if (existingCueIndex !== -1) {
       this.cards.splice(existingCueIndex, 1);
     }
+
     this.cards.splice(this.cueIndex, 0, this.cueCard);
     this.showCueCard();
   }
@@ -347,7 +350,7 @@ export class CardZone extends Phaser.GameObjects.Container {
     for (let i = 0; i < layoutCount; i++) {
       const card = this.cards[i];
       const x = startX + i * spacing;
-      const y = card === this.cueCard ? targetY-4 : targetY;
+      const y = (card === this.cueCard) ? targetY - 4 : targetY;
 
       const inputComp = InputCardComponent.getComp(card);
       if (inputComp) {

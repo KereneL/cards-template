@@ -18,8 +18,10 @@ export class Game extends Phaser.Scene {
         this.activeCards = [];
         this.createDeck();
         this.deck.shuffle();
-        this.enemy = new CardZone(this, 512, 125, 600, 150, {name: 'Enemy Sortable', defaultCueMode: 'sortable'});
+        this.enemy = new CardZone(this, 512, 125, 600, 150, {name: 'Other Sortable', defaultCueMode: 'sortable'});
+        this.add.triangle(212,300,0,-75,0,+75,75,0, 0).setOrigin(0).setAlpha(0.25)
         this.tableu = new CardZone(this, 512, 300, 600, 150, {name: 'Shift Only', defaultCueMode: 'shift'} );
+        this.add.triangle(812,475,0,-75,0,+75,-75,0, 0).setOrigin(0).setAlpha(0.25)
         this.tableu = new CardZone(this, 512, 475, 600, 150, {name: 'Push Only', defaultCueMode: 'push'} );
         this.hand = new CardZone(this, 512, 650, 600, 150, {name: 'Player Sortable', defaultCueMode: 'sortable'});
 
