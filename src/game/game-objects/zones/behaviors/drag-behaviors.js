@@ -91,8 +91,8 @@ export function onDragEnd(pointer, gameObject, dropped) {
         gameObject.shakeForInvalidMove(function () {
             comp.targetX = gameObject.input.dragStartX;
             comp.targetY = gameObject.input.dragStartY;
-            comp.shouldUpdate = true;
-            comp.physicsEnabled = true;
+            comp.shouldUpdate = false;
+            comp.physicsEnabled = false;
             originalZone.hideCueCard?.();
             originalZone.originalCard = null;
             originalZone.cueIndex = null;

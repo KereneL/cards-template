@@ -23,21 +23,21 @@ export class BaseCard extends Phaser.GameObjects.Container {
     const { CARD_BASE_SIZE, WIDTH_SCALE, HEIGHT_SCALE, CARD_STROKE_WIDTH } = CARD_RECT_STYLE
     const cardWidth = CARD_BASE_SIZE * WIDTH_SCALE
     const cardHeight = CARD_BASE_SIZE * HEIGHT_SCALE
-    this.cardBody = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, cardWidth, cardHeight, 0xdddddd, 1)
+    this.cardBody = new Phaser.GameObjects
+      .Rectangle(this.scene, 0, 0, cardWidth, cardHeight, 0xdddddd, 1)
       .setStrokeStyle(CARD_STROKE_WIDTH, 0x000000)
-
-    this.add(this.cardBody)
-  }
-  createCardShadow() {
-    const { CARD_BASE_SIZE } = CARD_RECT_STYLE;
-
-    this.cardShadow = new Phaser.GameObjects.Rectangle(this.scene, 5, 5, CARD_BASE_SIZE * 2.5, CARD_BASE_SIZE * 3.5, 0x000000, 0.25)
+    this.cardShadow = new Phaser.GameObjects
+      .Rectangle(this.scene, 5, 5, CARD_BASE_SIZE * 2.5, CARD_BASE_SIZE * 3.5, 0x000000, 0.25)
       .setOrigin(0.5)
       .setScale(1)
       .setAlpha(0)
       .setDepth(-1);
 
     this.add(this.cardShadow);
+    this.add(this.cardBody)
+  }
+  createCardShadow() {
+
   }
   scaleForDrag() {
     this.scene.tweens.add({
