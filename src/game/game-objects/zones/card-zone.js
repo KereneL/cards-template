@@ -121,7 +121,7 @@ export class CardZone extends Phaser.GameObjects.Container {
     if (this.defaultCueMode !== 'sortable') return;
 
     const pointerX = this.scene.input.activePointer.worldX;
-    const newIndex = this.calculateInsertIndexFromPointer(pointerX);
+    const newIndex = this.calculateInsertIndexFromPointer(pointerX, card);
     if (newIndex === this.cueIndex) return;
 
     const oldCueIndex = this.cards.indexOf(this.cueCard);
@@ -174,7 +174,7 @@ export class CardZone extends Phaser.GameObjects.Container {
   createCueCard() {
     this.cueCard = new BaseCard({ scene: this.scene });
     this.cueCard.setAlpha(0.5);
-    this.cueCard.cardBody.setFillStyle(0x005500);
+    //this.cueCard.cardBody.setFillStyle(0x005500);
     this.cueCard.visible = false;
     this.cueCard.isCueCard = true;
 
@@ -243,10 +243,15 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.layoutCards();
   }
 
-
   addCard(card) {
     const index = this.cueIndex ?? this.cards.length;
     this.addCardAt(card, index);
+  }
+
+  seqAddCard(card){
+    return ()=>{
+      this.addCard(card)
+    }
   }
 
   removeCard(card) {
@@ -279,13 +284,15 @@ export class CardZone extends Phaser.GameObjects.Container {
     return index;
   }
 
-  calculateInsertIndexFromPointer(pointerX) {
+  calculateInsertIndexFromPointer(pointerX, card) {
     const localX = this.worldToLocal(pointerX, 0).x;
 
+    console.log(localX, card.x,)
     const layoutCount = this.cards.filter(c => c !== this.cueCard).length + 1; // one slot for new card
 
-    const { CARD_BASE_SIZE, WIDTH_SCALE } = CARD_RECT_STYLE;
-    const cardWidth = CARD_BASE_SIZE * WIDTH_SCALE;
+    const { CARD_BASE_WIDTH, WIDTH_SCALE } = CARD_RECT_STYLE
+    const cardWidth = CARD_BASE_WIDTH * WIDTH_SCALE
+
     const availableWidth = this.width - cardWidth * 2;
 
     const spacing = layoutCount > 1
@@ -335,8 +342,9 @@ export class CardZone extends Phaser.GameObjects.Container {
     const layoutCount = this.cards.length;
     if (layoutCount === 0) return;
 
-    const { CARD_BASE_SIZE, WIDTH_SCALE } = CARD_RECT_STYLE;
-    const cardWidth = CARD_BASE_SIZE * WIDTH_SCALE;
+    const { CARD_BASE_WIDTH, WIDTH_SCALE } = CARD_RECT_STYLE
+    const cardWidth = CARD_BASE_WIDTH * WIDTH_SCALE
+
     const availableWidth = this.width - cardWidth * 2;
 
     const spacing = layoutCount > 1

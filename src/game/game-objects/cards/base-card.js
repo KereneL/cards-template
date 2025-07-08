@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { CARD_RECT_STYLE, CARD_TWEENS } from '../../config';
-const { SHORT_DURATION, DRAGGED_SCALE, EASE } = CARD_TWEENS;
+const { SHORT_DURATION, DRAGGED_SCALE, DEFAULT_EASE } = CARD_TWEENS;
 export class BaseCard extends Phaser.GameObjects.Container {
   constructor({ scene }) {
     super(scene, 0, 0);
@@ -20,20 +20,27 @@ export class BaseCard extends Phaser.GameObjects.Container {
   }
 
   createCardBody() {
-    const { CARD_BASE_SIZE, WIDTH_SCALE, HEIGHT_SCALE, CARD_STROKE_WIDTH } = CARD_RECT_STYLE
-    const cardWidth = CARD_BASE_SIZE * WIDTH_SCALE
-    const cardHeight = CARD_BASE_SIZE * HEIGHT_SCALE
-    this.cardBody = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, cardWidth, cardHeight, 0xdddddd, 1)
-      .setStrokeStyle(CARD_STROKE_WIDTH, 0x000000)
-
+    const { CARD_BASE_WIDTH, CARD_BASE_HEIGHT, WIDTH_SCALE, HEIGHT_SCALE, CARD_STROKE_WIDTH } = CARD_RECT_STYLE
+    const cardWidth = CARD_BASE_WIDTH * WIDTH_SCALE
+    const cardHeight = CARD_BASE_HEIGHT * HEIGHT_SCALE
+    const textureKey = 'blank_card';
+    
+    this.cardBody = new Phaser.GameObjects.Plane(this.scene, 0, 0, textureKey, 0, 1, 1)
+    .setDisplaySize(cardWidth, cardHeight);
+    this.width = cardWidth
+    this.height = cardHeight
+    this.scene.add.existing(this.cardBody)
     this.add(this.cardBody)
   }
-  createCardShadow() {
-    const { CARD_BASE_SIZE } = CARD_RECT_STYLE;
 
-    this.cardShadow = new Phaser.GameObjects.Rectangle(this.scene, 5, 5, CARD_BASE_SIZE * 2.5, CARD_BASE_SIZE * 3.5, 0x000000, 0.25)
+  createCardShadow() {
+    const { CARD_BASE_WIDTH, CARD_BASE_HEIGHT, WIDTH_SCALE, HEIGHT_SCALE } = CARD_RECT_STYLE
+    const cardWidth = CARD_BASE_WIDTH * WIDTH_SCALE
+    const cardHeight = CARD_BASE_HEIGHT * HEIGHT_SCALE
+
+    this.cardShadow = new Phaser.GameObjects.Image(this.scene, -3*WIDTH_SCALE, 3*HEIGHT_SCALE, `card_shadow`,0)
+      .setDisplaySize(cardWidth, cardHeight)
       .setOrigin(0.5)
-      .setScale(1)
       .setAlpha(0)
       .setDepth(-1);
 
@@ -43,16 +50,15 @@ export class BaseCard extends Phaser.GameObjects.Container {
     this.scene.tweens.add({
       targets: this,
       scale: DRAGGED_SCALE,
-      ease: EASE,
+      ease: DEFAULT_EASE,
       duration: SHORT_DURATION,
     });
 
     if (this.cardShadow) {
       this.scene.tweens.add({
         targets: this.cardShadow,
-        alpha: 0.35,
-        scale: DRAGGED_SCALE,
-        ease: EASE,
+        alpha: 1,
+        ease: DEFAULT_EASE,
         duration: SHORT_DURATION,
       });
     }
@@ -62,7 +68,7 @@ export class BaseCard extends Phaser.GameObjects.Container {
       targets: this,
       x: this.x + 10,
       duration: 50,
-      ease: EASE,
+      ease: DEFAULT_EASE,
       yoyo: true,
       repeat: 1,
       completeDelay: SHORT_DURATION,
@@ -73,16 +79,15 @@ export class BaseCard extends Phaser.GameObjects.Container {
   scaleAfterDrag() {
     this.scene.tweens.add({
       targets: this,
-      scale: CARD_TWEENS.IDLE_SCALE,
-      ease: CARD_TWEENS.EASE,
+      scale: CARD_TWEENS.STANDARD_SCALE,
+      ease: CARD_TWEENS.DEFAULT_EASE,
       duration: CARD_TWEENS.SHORT_DURATION,
     });
     if (this.cardShadow) {
       this.scene.tweens.add({
         targets: this.cardShadow,
         alpha: 0,
-        scale: 1,
-        ease: EASE,
+        ease: DEFAULT_EASE,
         duration: CARD_TWEENS.SHORT_DURATION,
       });
     }

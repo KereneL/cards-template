@@ -1,3 +1,4 @@
+import { CARD_RECT_STYLE } from '../config';
 import { BaseComponent } from './base-component';
 
 export class InputCardComponent extends BaseComponent {
@@ -23,13 +24,17 @@ export class InputCardComponent extends BaseComponent {
     this.velocityX = 0;
     this.lastPointerX = null;
 
+    const { CARD_BASE_WIDTH, CARD_BASE_HEIGHT, WIDTH_SCALE, HEIGHT_SCALE } = CARD_RECT_STYLE
+    const cardWidth = CARD_BASE_WIDTH * WIDTH_SCALE
+    const cardHeight = CARD_BASE_HEIGHT * HEIGHT_SCALE
+
     card.setInteractive({
       draggable: this.draggable,
       hitArea: new Phaser.Geom.Rectangle(
-        -card.cardBody.width / 2,
-        -card.cardBody.height / 2,
-        card.cardBody.width,
-        card.cardBody.height
+        0,
+        0,
+        cardWidth,
+        cardHeight
       ),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains
     });

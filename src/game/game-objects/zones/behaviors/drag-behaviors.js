@@ -1,12 +1,11 @@
 import { InputCardComponent } from "../../../components/input-component";
 import { CARD_TWEENS } from "../../../config";
-const { SHORT_DURATION, DRAGGED_SCALE, EASE } = CARD_TWEENS;
+const { SHORT_DURATION, DRAGGED_SCALE, DEFAULT_EASE } = CARD_TWEENS;
 
 export function onDragStart(pointer, gameObject) {
     const comp = InputCardComponent.getComp(gameObject);
     if (!comp) return;
 
-    this.isDragging = true;
     comp.isDragging = true;
     comp.shouldUpdate = true;
     comp.lastPointerX = pointer.x;
@@ -14,7 +13,7 @@ export function onDragStart(pointer, gameObject) {
     comp.originalZone = gameObject.parentZone;
     comp.originalZone?.handleDragStart?.(gameObject);
 
-    this.children.bringToTop(comp.originalZone)
+    gameObject.scene.children.bringToTop(comp.originalZone)
     gameObject.setDepth(999)
     comp.originalZone.sortChildren('depth')
     gameObject.scaleForDrag()
@@ -46,7 +45,7 @@ export function onDrop(pointer, gameObject, dropZone) {
     const isSameZone = container === origin;
 
     if (isSameZone) {
-        this.input.emit('dragend', pointer, gameObject, false); // force revert
+        gameObject.scene.input.emit('dragend', pointer, gameObject, false); // force revert
         return;
     }
 
@@ -57,15 +56,12 @@ export function onDragEnd(pointer, gameObject, dropped) {
     const comp = InputCardComponent.getComp(gameObject);
     if (!comp) return;
 
-    this.isDragging = false;
     comp.isDragging = false;
     comp.rotationTarget = 0;
 
     const originalZone = comp.originalZone;
 
     if (!dropped && originalZone) {
-
-        // ❌ Remove cueCard if it's still in the array
         const cueIdx = originalZone.cards.indexOf(originalZone.cueCard);
         if (cueIdx !== -1) {
             originalZone.cards.splice(cueIdx, 1);
@@ -87,7 +83,6 @@ export function onDragEnd(pointer, gameObject, dropped) {
         comp.targetX = comp.currentX;
         comp.targetY = comp.currentY;
 
-        const originalX = comp.currentX;
         gameObject.shakeForInvalidMove(function () {
             comp.targetX = gameObject.input.dragStartX;
             comp.targetY = gameObject.input.dragStartY;

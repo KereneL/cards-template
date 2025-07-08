@@ -6,13 +6,14 @@ import { CardZone } from '../game-objects/zones/card-zone';
 import { CardPhysicsSystem } from '../utils'
 import { gameObjectOver, gameObjectOut } from '../game-objects/zones/behaviors/hover-behaviors';
 import { onDragStart, onDrag, onDragEnter, onDragLeave, onDragOver, onDrop, onDragEnd } from '../game-objects/zones/behaviors/drag-behaviors';
+import { COLORS } from '../config';
 export class Game extends Phaser.Scene {
     constructor() {
         super('Game');
+        
     }
     create() {
-        this.cameras.main.setBackgroundColor(0x00ff00);
-        this.add.image(512, 384, 'background').setAlpha(0.25);
+        this.cameras.main.setBackgroundColor(COLORS.GREEN.TERTIARY);
         this.input.dragDistanceThreshold = 2;
         this.isDragging = false;
         this.activeCards = [];
@@ -23,10 +24,15 @@ export class Game extends Phaser.Scene {
         this.tableu = new CardZone(this, 512, 300, 600, 150, {name: 'Shift Only', defaultCueMode: 'shift'} );
         this.add.triangle(812,475,0,-75,0,+75,-75,0, 0).setOrigin(0).setAlpha(0.25)
         this.tableu = new CardZone(this, 512, 475, 600, 150, {name: 'Push Only', defaultCueMode: 'push'} );
-        this.hand = new CardZone(this, 512, 650, 600, 150, {name: 'Player Sortable', defaultCueMode: 'sortable'});
+        this.hand = new CardZone(this, 512, 650, 600, 150, { name: 'Player Sortable', defaultCueMode: 'sortable' });
 
-        this.dealSomeCards(10,  this.hand);
-        this.dealSomeCards(10,  this.enemy);
+        this.seq = [];
+        this.dealSomeCards(10, this.hand);
+        this.dealSomeCards(10, this.enemy);
+
+        this.seq.forEach((val, indx) => {
+            setTimeout(val, (indx+1)*75)
+        })
 
         this.applyListeners();
     }
@@ -53,10 +59,10 @@ export class Game extends Phaser.Scene {
             return bComp.value.sequenceAs[0] - aComp.value.sequenceAs[0];
         });
 
-        for (const card of selected) {
+        selected.forEach((card)=> {
             card.addComponent(InputCardComponent);
-            zone.addCard(card);
-        }
+            this.seq.push(zone.seqAddCard(card))
+        })
 
         this.activeCards.push(...selected);
         
