@@ -16,6 +16,8 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.defaultCueMode = config.defaultCueMode ?? 'sortable'; //or push or shift
     this.cueIndex = null;
 
+    this.allowDroppingCards = true;
+    this.allowTakingCards = true;
     this.createBackground()
     this.createCounter()
 
@@ -32,9 +34,9 @@ export class CardZone extends Phaser.GameObjects.Container {
       })
         .setOrigin(0)
         .setDepth(-90);
+      this.name = config.name
       this.add(this.text);
     }
-
 
     this.createCueCard();
     this.setupInteractiveZone();
@@ -55,6 +57,7 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.counter = this.scene.add.text(right - gap,top + gap,counter).setOrigin(1,0)
     this.add(this.counter);
   }
+  
   setupInteractiveZone() {
     this.phaserZone = this.scene.add.zone(0, 0, this.width, this.height)
       .setOrigin(0.5)
@@ -188,7 +191,6 @@ export class CardZone extends Phaser.GameObjects.Container {
   createCueCard() {
     this.cueCard = new BaseCard({ scene: this.scene });
     this.cueCard.setAlpha(0.5);
-    //this.cueCard.cardBody.setFillStyle(0x005500);
     this.cueCard.visible = false;
     this.cueCard.isCueCard = true;
 
@@ -298,10 +300,9 @@ export class CardZone extends Phaser.GameObjects.Container {
     return index;
   }
 
-  calculateInsertIndexFromPoint(pointLike) {
-    const cardWorldPosition = this.localTransform.transformPoint(pointLike.x,pointLike.y)
-    const cardLocalPosition = this.worldToLocal(cardWorldPosition.x, cardWorldPosition.y)
-    
+  calculateInsertIndexFromPoint(card) {
+    const cardWorldPosition = card.getWorldTransformMatrix();
+    const cardLocalPosition = this.worldToLocal(cardWorldPosition.tx, cardWorldPosition.ty)
     const layoutCount = this.cards.filter(c => c !== this.cueCard).length + 1; // one slot for new card
 
     const { CARD_BASE_WIDTH, WIDTH_SCALE } = CARD_RECT_STYLE

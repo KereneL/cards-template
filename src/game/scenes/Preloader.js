@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { CARD_RECT_STYLE, CARD_SUITES, CARD_VALUES } from '../config';
 
 const SPRITESHEET_URL = './assets/snoblin_full_cards.png'
+const SPRITESHEET_NORMAL_MAP_URL = './assets/snoblin_full_cards_n.png'
 const SPRITESHEET_KEY = 'spritesheet-cards'
 export class Preloader extends Scene
 {
@@ -36,7 +37,7 @@ export class Preloader extends Scene
     }
     _loadSpritesheet() {
         this.load.setPath();
-        this.load.spritesheet(SPRITESHEET_KEY, SPRITESHEET_URL, {
+        this.load.spritesheet(SPRITESHEET_KEY, [SPRITESHEET_URL,SPRITESHEET_NORMAL_MAP_URL], {
             frameWidth: 39,
             frameHeight: 55,
             spacing: 1
@@ -51,9 +52,11 @@ export class Preloader extends Scene
                 const cValue = CARD_VALUES[valueKey]
                 const { indexInSpritesheet } = cValue
                 const ssIndex = spritesheetRow * 13 + indexInSpritesheet
-                const textureKey = `${cValue.texturePhrase}${cSuit.texturePhrase}`;
-                const cardKey = `card_${textureKey}`;
-                this.createTextureFromSpritesheetFrame(ssIndex, cardKey)
+                const baseKey = `${cValue.texturePhrase}${cSuit.texturePhrase}`
+                const textureKey = `texture_${baseKey}`;
+                const cardKey = `card_${baseKey}`;
+                this.createTextureFromSpritesheetFrame(ssIndex, textureKey, false)
+                this.createTextureFromSpritesheetFrame(ssIndex, cardKey, true)
             }
         };
         
@@ -67,20 +70,28 @@ export class Preloader extends Scene
         [103, `card_shadow`]
         ].forEach((text) => {
             if (!texture.get(text[0])) return;
-            const textureKey = text[1];
-            this.createTextureFromSpritesheetFrame(text[0], textureKey)
+            const textureKey = `texture_${text[1]}`;
+            const cardKey = `card_${text[1]}`;
+            this.createTextureFromSpritesheetFrame(text[0], textureKey, false) 
+            this.createTextureFromSpritesheetFrame(text[0], cardKey, true) 
         })
     }
 
-    createTextureFromSpritesheetFrame(frameIndex, key) {
+    createTextureFromSpritesheetFrame(frameIndex, key, drawBackground) {
         const { CARD_BASE_WIDTH, CARD_BASE_HEIGHT, } = CARD_RECT_STYLE
 
         const texture = this.textures.get(SPRITESHEET_KEY);
         const originalFrame = texture.get(frameIndex);
         if (originalFrame) {
-            const rt = this.make.renderTexture({ x: 0, y: 0, width: CARD_BASE_WIDTH, height: CARD_BASE_HEIGHT }, false);
-            rt.drawFrame(SPRITESHEET_KEY, frameIndex)
-            rt.saveTexture(key);
+            const rt = this.make.renderTexture({ x: 0, y: 0, width: CARD_BASE_WIDTH, height: CARD_BASE_HEIGHT }, false)
+
+            if (drawBackground) {
+                rt.setPipeline(); // Remove Light2D pipeline
+                rt.drawFrame(SPRITESHEET_KEY, 90);
+            }
+                // rt.setPipeline('Light2D');
+            rt.drawFrame(SPRITESHEET_KEY, frameIndex);
+            rt.saveTexture(key)
             rt.destroy();
         }
     }

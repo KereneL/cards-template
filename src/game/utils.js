@@ -21,7 +21,7 @@ export function CardPhysicsSystem(scene, pointer = scene.input.activePointer) {
 
   for (const card of scene.activeCards) {
     const comp = InputCardComponent.getComp(card);
-if (!comp || !comp.physicsEnabled) continue;
+if (!comp || !comp.physicsEnabled || !comp.shouldUpdate) continue;
 
     // Position interpolation
     comp.currentX = Phaser.Math.Linear(comp.currentX, comp.targetX, 0.25);

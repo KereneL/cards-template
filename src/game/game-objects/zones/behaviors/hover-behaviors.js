@@ -6,22 +6,19 @@ export function gameObjectOver(pointer, gameObject, event) {
     const comp = InputCardComponent.getComp(gameObject);
     if (!comp || !comp.hoverable || this.isDragging) return;
 
-    this.tweens.add({
-        targets: gameObject,
-        scale: HOVERED_SCALE,
-        ease: DEFAULT_EASE,
-        duration: SHORT_DURATION,
-    })
+    gameObject?.onPointerOver?.(pointer)
+
 }
 
+export function gameObjectMove(pointer, gameObject, event) {
+    const comp = InputCardComponent.getComp(gameObject);
+    if (!comp || !comp.hoverable || this.isDragging) return;
+
+    gameObject?.onPointerMove?.(pointer)
+}
 export function gameObjectOut(pointer, gameObject, event) {
     const comp = InputCardComponent.getComp(gameObject);
     if (!comp || !comp.hoverable || this.isDragging) return;
 
-    this.tweens.add({
-        targets: gameObject,
-        scale: STANDARD_SCALE,
-        ease: DEFAULT_EASE,
-        duration: SHORT_DURATION,
-    })
+    gameObject?.onPointerOut?.(pointer)
 }

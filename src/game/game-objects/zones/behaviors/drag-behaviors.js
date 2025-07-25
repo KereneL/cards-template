@@ -36,23 +36,28 @@ export function onDragOver(pointer, gameObject, dropZone) {
     dropZone.parentContainer?.handleDragOver?.(gameObject);
 }
 export function onDrop(pointer, gameObject, dropZone) {
-    const container = dropZone.parentContainer;
-    if (!container) return;
+    const targetZone = dropZone.parentContainer;
+    if (!targetZone) return;
 
     const comp = InputCardComponent.getComp(gameObject);
-    const origin = comp?.originalZone;
+    const originZone = comp?.originalZone;
 
-    const isSameZone = container === origin;
+    const isSameZone = targetZone === originZone;
+    const originAllowTakingCards = originZone.allowTakingCards;
+    const targetAllowDroppingCards = targetZone.allowDroppingCards;
 
-    if (isSameZone) {
+    if (isSameZone || !originAllowTakingCards || !targetAllowDroppingCards) {
+        if (!isSameZone) {
+            targetZone.removeCueCard();
+            targetZone.hideCueCard();
+        }
         gameObject.scene.input.emit('dragend', pointer, gameObject, false); // force revert
         return;
     }
-
-    container.transferCardFromZone(origin, gameObject);
-    container.handleDrop(gameObject);
+    targetZone.transferCardFromZone(originZone, gameObject);
+    targetZone.handleDrop(gameObject);
 }
-export function onDragEnd(pointer, gameObject, dropped) {
+export function onDragEnd(pointer, gameObject, dropped, text) {
     const comp = InputCardComponent.getComp(gameObject);
     if (!comp) return;
 
@@ -61,7 +66,7 @@ export function onDragEnd(pointer, gameObject, dropped) {
 
     const originalZone = comp.originalZone;
 
-    if (!dropped && originalZone) {
+    if ((!dropped || !originalZone.allowTakingCards) && originalZone) {
         const cueIdx = originalZone.cards.indexOf(originalZone.cueCard);
         if (cueIdx !== -1) {
             originalZone.cards.splice(cueIdx, 1);
@@ -74,20 +79,22 @@ export function onDragEnd(pointer, gameObject, dropped) {
             originalZone.add(gameObject);
         }
 
-        gameObject.parentZone = originalZone;
-        gameObject.parentContainer = originalZone;
 
-        originalZone.layoutCards();
+        gameObject.parentContainer = originalZone;
+        gameObject.parentZone = originalZone;
+
+        //originalZone.layoutCards();
 
         comp.physicsEnabled = false;
+        comp.shouldUpdate = false;
         comp.targetX = comp.currentX;
         comp.targetY = comp.currentY;
 
         gameObject.shakeForInvalidMove(function () {
             comp.targetX = gameObject.input.dragStartX;
             comp.targetY = gameObject.input.dragStartY;
-            comp.shouldUpdate = true;
             comp.physicsEnabled = true;
+            comp.shouldUpdate = true;
             originalZone.hideCueCard?.();
             originalZone.originalCard = null;
             originalZone.cueIndex = null;
