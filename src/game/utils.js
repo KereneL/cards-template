@@ -1,6 +1,6 @@
 
 import Phaser from 'phaser';
-import { InputCardComponent } from './components/input-component';
+import { InputCardComponent } from './components/input-card-component';
 import { CARD_TWEENS } from './config'
 
 export function worldToLocal(worldX, worldY, container) {

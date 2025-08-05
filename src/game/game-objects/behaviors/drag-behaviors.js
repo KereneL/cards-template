@@ -1,5 +1,5 @@
-import { InputCardComponent } from "../../../components/input-component";
-import { CARD_TWEENS } from "../../../config";
+import { InputCardComponent } from "../../components/input-card-component";
+import { CARD_TWEENS } from "../../config";
 const { SHORT_DURATION, DRAGGED_SCALE, DEFAULT_EASE } = CARD_TWEENS;
 
 export function onDragStart(pointer, gameObject) {

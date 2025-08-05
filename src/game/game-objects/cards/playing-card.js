@@ -1,7 +1,7 @@
 import { BaseCard } from './base-card';
 import { PlayingCardComponent } from '../../components/playing-card-component';
 import { CARD_RECT_STYLE, CARD_TEXT_STYLE } from '../../config';
-import { InputCardComponent } from '../../components/input-component';
+import { InputCardComponent } from '../../components/input-card-component';
 const SPRITESHEET_KEY = 'spritesheet-cards'
 
 export class PlayingCard extends BaseCard {

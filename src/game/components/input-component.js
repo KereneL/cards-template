@@ -1,52 +1,46 @@
 import { CARD_RECT_STYLE } from '../config';
 import { BaseComponent } from './base-component';
 
-export class InputCardComponent extends BaseComponent {
-  constructor(card, config = {
+export class InputComponent extends BaseComponent {
+  static KEY = '_InputComponent';
+
+  static getComp(gameObject) {
+    return gameObject[InputComponent.KEY] || null;
+  }
+
+  static removeComp(gameObject) {
+    if (gameObject[InputComponent.KEY]) {
+      delete gameObject[InputComponent.KEY];
+    }
+  }
+
+  attach() {
+    this.gameObject[InputComponent.KEY] = this;
+  }
+
+  constructor(gameObject, config = {
     hoverable: true,
     draggable: true,
+    clickable: true,
   }) {
-    super(card);
-
+    super(gameObject);
     this.hoverable = config.hoverable
     this.draggable = config.draggable
+    this.clickable = config.clickable
+
     this.shouldUpdate = true;
-    this.physicsEnabled = true;
+    this.physicsEnabled = false;
     this.isDragging = false;
 
-    this.targetX = card.x;
-    this.targetY = card.y;
-    this.currentX = card.x;
-    this.currentY = card.y;
-    this.originalZone = null;
-    this.currentRotation = 0;
-    this.rotationTarget = 0;
-    this.velocityX = 0;
-    this.lastPointerX = null;
-
-    const { CARD_BASE_WIDTH, CARD_BASE_HEIGHT, WIDTH_SCALE, HEIGHT_SCALE } = CARD_RECT_STYLE
-    const cardWidth = CARD_BASE_WIDTH * WIDTH_SCALE
-    const cardHeight = CARD_BASE_HEIGHT * HEIGHT_SCALE
-
-    card.setInteractive({
+    gameObject.setInteractive({
       draggable: this.draggable,
       hitArea: new Phaser.Geom.Rectangle(
         0,
         0,
-        cardWidth,
-        cardHeight
+        gameObject.displayWidth,
+        gameObject.displayHeight
       ),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains
     });
-
-    card.on('positionChanged', function () {
-      this.refreshPosition();
-    }, this);
-  }
-
-  refreshPosition() {
-    this.currentX = this.gameObject.x;
-    this.currentY = this.gameObject.y;
-    this.physicsEnabled = true;
   }
 }

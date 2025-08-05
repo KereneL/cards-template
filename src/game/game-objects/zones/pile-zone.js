@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { worldToLocal } from '../../utils';
-import { InputCardComponent } from '../../components/input-component';
+import { InputCardComponent } from '../../components/input-card-component';
 import { BaseCard } from '../cards/base-card';
 import { CARD_RECT_STYLE, CARD_TWEENS } from '../../config';
 import { PlayingCardComponent } from '../../components/playing-card-component';

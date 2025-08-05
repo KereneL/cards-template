@@ -114,7 +114,7 @@ export class BaseCard extends Phaser.GameObjects.Container {
       duration: 50,
       ease: DEFAULT_EASE,
       yoyo: true,
-      repeat: 1,
+      repeat: 2,
       completeDelay: SHORT_DURATION,
       onComplete,
       onCompleteParams,
