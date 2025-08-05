@@ -39,7 +39,6 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.createCueCard();
     this.setupInteractiveZone();
   }
-
   setupInteractiveZone() {
     this.phaserZone = this.scene.add.zone(0, 0, this.width, this.height)
       .setOrigin(0.5)
@@ -49,7 +48,6 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.add(this.phaserZone);
     this.phaserZone.parentContainer = this;
   }
-
   handleDragStart(card) {
     const comp = InputCardComponent.getComp(card);
     if (!comp || !this.cards.includes(card)) return;
@@ -58,18 +56,19 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.cueIsInsert = false;
     this.cueIndex = this.cards.indexOf(card);
     this.originalCueIndex = this.cueIndex;
-
     this.cueCard.setPosition(card.x, card.y);
+
+    comp.isDragging = true;
+    comp.enablePhysics();
+    card.setDepth(9999);
 
     const i = this.cards.indexOf(card);
     if (i !== -1) this.cards.splice(i, 1);           // remove dragged card
-    this.cards.splice(this.cueIndex, 0, this.cueCard); // insert cue exactly where card was
+    this.cards.splice(this.cueIndex, 0, this.cueCard); // insert cue where original card was
 
-    card.setDepth(9999);
     this.sortChildren();
     this.showCueCard();
   }
-
   handleDragEnter(card) {
     const comp = InputCardComponent.getComp(card);
     if (!comp) return;
@@ -93,7 +92,22 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.cards.splice(this.cueIndex, 0, this.cueCard);
     this.showCueCard();
   }
+  handleDragOver(card) {
+    if (this.defaultCueMode !== 'sortable') return;
 
+    const pointerX = this.scene.input.activePointer.worldX;
+    const newIndex = this.calculateInsertIndexFromPointer(pointerX);
+    if (newIndex === this.cueIndex) return;
+
+    const oldCueIndex = this.cards.indexOf(this.cueCard);
+    if (oldCueIndex !== -1) {
+      this.cards.splice(oldCueIndex, 1);
+    }
+
+    this.cueIndex = newIndex;
+    this.cards.splice(this.cueIndex, 0, this.cueCard);
+    this.layoutCards();
+  }
   handleDragLeave(card) {
     const comp = InputCardComponent.getComp(card);
     if (!comp) return;
@@ -116,24 +130,13 @@ export class CardZone extends Phaser.GameObjects.Container {
 
     this.layoutCards();
   }
+  hanleDragEnd(card) {
+    const comp = InputCardComponent.getComp(card);
+    if (!comp) return;
 
-  handleDragOver(card) {
-    if (this.defaultCueMode !== 'sortable') return;
-
-    const pointerX = this.scene.input.activePointer.worldX;
-    const newIndex = this.calculateInsertIndexFromPointer(pointerX);
-    if (newIndex === this.cueIndex) return;
-
-    const oldCueIndex = this.cards.indexOf(this.cueCard);
-    if (oldCueIndex !== -1) {
-      this.cards.splice(oldCueIndex, 1);
-    }
-
-    this.cueIndex = newIndex;
-    this.cards.splice(this.cueIndex, 0, this.cueCard);
-    this.layoutCards();
+    comp.isDragging = false;
+    comp.physicsEnabled = false;
   }
-
   handleDrop(card) {
     const comp = InputCardComponent.getComp(card);
     const fromZone = comp?.originalZone;
@@ -147,30 +150,29 @@ export class CardZone extends Phaser.GameObjects.Container {
       this.hideCueCard();
       return;
     }
-
     this.removeCard(card);
 
     // Use centralized logic
     this.addCardAt(card, this.cueIndex, { replaceCue: true });
+
+    comp.isDragging = false;
+    comp.rotationTarget = 0;
+    comp.disablePhysics();
 
     this.cueIndex = null;
     this.originalCueIndex = null;
     this.cueIsInsert = false;
     this.cueCard.visible = false;
   }
-
-
   insertCueCardAt(index) {
     const existing = this.cards.indexOf(this.cueCard);
     if (existing !== -1) this.cards.splice(existing, 1);
     this.cards.splice(index, 0, this.cueCard);
   }
-
   removeCueCard() {
     const index = this.cards.indexOf(this.cueCard);
     if (index !== -1) this.cards.splice(index, 1);
   }
-
   createCueCard() {
     this.cueCard = new BaseCard({ scene: this.scene });
     this.cueCard.setAlpha(0.5);
@@ -181,7 +183,6 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.add(this.cueCard);
     this.cueCard.parentContainer = this
   }
-
   getDropCueIndex(gameObject, fromZone) {
     if (fromZone === this && this.defaultCueMode !== 'sortable') return null;
     if (this.defaultCueMode === 'shift') return 0;
@@ -189,7 +190,6 @@ export class CardZone extends Phaser.GameObjects.Container {
     if (this.defaultCueMode === 'sortable') return this.calculateInsertIndex(gameObject);
     return this.cards.length;
   }
-
   showCueCard() {
     const { SHORTER_DURATION, CARD_TILT } = CARD_TWEENS
     const { CUE_ALPHA } = CARD_RECT_STYLE
@@ -202,7 +202,6 @@ export class CardZone extends Phaser.GameObjects.Container {
     })
     this.layoutCards();
   }
-
   hideCueCard(skipRemove = false) {
     const { SHORTER_DURATION } = CARD_TWEENS;
     const { CUE_ALPHA } = CARD_RECT_STYLE;
@@ -222,7 +221,6 @@ export class CardZone extends Phaser.GameObjects.Container {
 
     this.layoutCards();
   }
-
   addCardAt(card, index, { replaceCue = true } = {}) {
     if (this.cards.includes(card)) return;
 
@@ -239,32 +237,27 @@ export class CardZone extends Phaser.GameObjects.Container {
     card.parentZone = this;
     card.parentContainer = this;
 
-    InputCardComponent.getComp(card)?.refreshPosition();
+    //InputCardComponent.getComp(card)?.refreshPosition();
     this.layoutCards();
   }
-
-
   addCard(card) {
     const index = this.cueIndex ?? this.cards.length;
     this.addCardAt(card, index);
   }
-
   removeCard(card) {
     const index = this.cards.indexOf(card);
     if (index !== -1) this.cards.splice(index, 1);
     this.layoutCards();
   }
-
   transferCardFromZone(oldZone, card) {
     if (!oldZone) return this.addCard(card);
     const worldX = card.getWorldTransformMatrix().tx;
     const worldY = card.getWorldTransformMatrix().ty;
     const local = worldToLocal(worldX, worldY, this);
     card.setPosition(local.x, local.y);
-    InputCardComponent.getComp(card)?.refreshPosition();
+    //InputCardComponent.getComp(card)?.refreshPosition();
     oldZone.removeCard(card);
   }
-
   calculateInsertIndex(gameObject) {
     const local = this.worldToLocal(gameObject.x, gameObject.y);
     let index = this.cards.length;
@@ -278,7 +271,6 @@ export class CardZone extends Phaser.GameObjects.Container {
     }
     return index;
   }
-
   calculateInsertIndexFromPointer(pointerX) {
     const localX = this.worldToLocal(pointerX, 0).x;
 
@@ -305,7 +297,6 @@ export class CardZone extends Phaser.GameObjects.Container {
 
     return layoutCount; // fallback to end
   }
-
   getBoundsRect() {
     return new Phaser.Geom.Rectangle(
       this.x - this.width / 2,
@@ -314,7 +305,6 @@ export class CardZone extends Phaser.GameObjects.Container {
       this.height
     );
   }
-
   worldToLocal(worldX, worldY) {
     const matrix = new Phaser.GameObjects.Components.TransformMatrix();
     this.getWorldTransformMatrix(matrix);
@@ -322,7 +312,6 @@ export class CardZone extends Phaser.GameObjects.Container {
     const local = matrix.transformPoint(worldX, worldY);
     return new Phaser.Math.Vector2(local.x, local.y);
   }
-
   sortChildren() {
     this.list.sort((a, b) => {
       const aDepth = a.depth ?? 0;
@@ -330,7 +319,6 @@ export class CardZone extends Phaser.GameObjects.Container {
       return aDepth - bDepth;
     });
   }
-
   layoutCards() {
     const layoutCount = this.cards.length;
     if (layoutCount === 0) return;
@@ -354,19 +342,32 @@ export class CardZone extends Phaser.GameObjects.Container {
 
       const inputComp = InputCardComponent.getComp(card);
       if (inputComp) {
-        inputComp.currentX = card.x;
-        inputComp.currentY = card.y;
+        console.log(card.name, 'dragging:', inputComp.isDragging, 'physics:', inputComp.physicsEnabled);
+        if (!inputComp.physicsEnabled && !inputComp.isDragging) {
+          console.log("tween")
+          this.scene.tweens.add({
+            targets: card,
+            x,
+            y,
+            duration: 200, // or CARD_TWEENS.SHORT_DURATION
+            ease: 'Sine.easeInOut'
+          });
+        } else {
+          card.x = x;
+          card.y = y;
+        }
+
         inputComp.targetX = x;
         inputComp.targetY = y;
         inputComp.shouldUpdate = true;
       } else {
+        console.log("set")
         card.setPosition(x, y);
       }
 
       card.setDepth(i);
       card.emit?.('positionChanged');
     }
-
     this.sortChildren();
   }
 }

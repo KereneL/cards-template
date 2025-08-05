@@ -6,11 +6,10 @@ export class InputCardComponent extends BaseComponent {
     draggable: true,
   }) {
     super(card);
-
-    this.hoverable = config.hoverable
-    this.draggable = config.draggable
-    this.shouldUpdate = true;
-    this.physicsEnabled = true;
+    this.hoverable = config.hoverable;
+    this.draggable = config.draggable;
+    this.shouldUpdate = false;
+    this.physicsEnabled = false;
     this.isDragging = false;
 
     this.targetX = card.x;
@@ -38,10 +37,17 @@ export class InputCardComponent extends BaseComponent {
       this.refreshPosition();
     }, this);
   }
-
   refreshPosition() {
     this.currentX = this.gameObject.x;
     this.currentY = this.gameObject.y;
     this.physicsEnabled = true;
+  }
+  enablePhysics() {
+    this.physicsEnabled = true;
+    this.shouldUpdate = true;
+  }
+  disablePhysics() {
+    this.physicsEnabled = false;
+    this.shouldUpdate = false;
   }
 }
