@@ -1,13 +1,10 @@
 import Phaser from 'phaser';
 import { createRegularDeck, BaseDeck } from '../game-objects/deck/base-deck';
 import { PlayingCardComponent } from '../components/playing-card-component';
+import { InputManager } from '../game-objects/behaviors/input-manager';
 import { InputComponent } from '../components/input-component';
-import { InputCardComponent } from '../components/input-card-component';
 import { CardZone } from '../game-objects/zones/card-zone';
 import { CardPhysicsSystem } from '../utils'
-import { gameObjectDown, gameObjectUp } from '../game-objects/behaviors/click-behaviors';
-import { gameObjectOver, gameObjectMove, gameObjectOut } from '../game-objects/behaviors/hover-behaviors';
-import { onDragStart, onDrag, onDragEnter, onDragLeave, onDragOver, onDrop, onDragEnd } from '../game-objects/behaviors/drag-behaviors';
 import { PHASER_COLORS, COLORS, GUI } from '../config';
 import { PileZone } from '../game-objects/zones/pile-zone';
 import { Button } from '../game-objects/gui/button';
@@ -29,7 +26,6 @@ export class Game extends Phaser.Scene {
 
         this.cameras.main.setBackgroundColor(COLORS.GREEN.TERTIARY);
         this.input.dragDistanceThreshold = GUI.DRAG_DISTANCE_THRESHOLD;
-        this.isDragging = false;
         this.activeCards = [];
         this.createDeck();
         this.deck.shuffle();
@@ -56,7 +52,7 @@ export class Game extends Phaser.Scene {
             setTimeout(val, (indx+1)*15)
         })
 
-        this.applyListeners();
+        this.inputManager = InputManager.getInstance(this)
     }
     createDeck() {
         const deckCardsArr = createRegularDeck(this);
@@ -82,26 +78,12 @@ export class Game extends Phaser.Scene {
         });
 
         selected.forEach((card)=> {
-            card.addComponent(InputCardComponent);
+            card.addComponent(InputComponent);
             this.seq.push(zone.seqAddCard(card))
         })
 
         this.activeCards.push(...selected);
         
-    }
-    applyListeners() {
-        this.input.on('gameobjectover', gameObjectOver, this);
-        this.input.on('gameobjectmove', gameObjectMove, this);
-        this.input.on('gameobjectdown', gameObjectDown, this)
-        this.input.on('gameobjectup', gameObjectUp, this)
-        this.input.on('gameobjectout', gameObjectOut, this);
-        this.input.on('dragstart', onDragStart, this);
-        this.input.on('drag', onDrag, this);
-        this.input.on('dragenter', onDragEnter, this);
-        this.input.on('dragleave', onDragLeave, this);
-        this.input.on('dragover', onDragOver, this);
-        this.input.on('drop', onDrop, this);
-        this.input.on('dragend', onDragEnd, this);
     }
     update() {
         CardPhysicsSystem(this)

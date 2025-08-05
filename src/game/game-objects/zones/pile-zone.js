@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { worldToLocal } from '../../utils';
-import { InputCardComponent } from '../../components/input-card-component';
+import { InputComponent } from '../../components/input-component';
 import { BaseCard } from '../cards/base-card';
 import { CARD_RECT_STYLE, CARD_TWEENS } from '../../config';
 import { PlayingCardComponent } from '../../components/playing-card-component';
@@ -45,7 +45,7 @@ export class PileZone extends CardZone {
             const x = startX;
             const y = startY - i * spacing;
 
-            const inputComp = InputCardComponent.getComp(card);
+            const inputComp = InputComponent.getComp(card);
             if (inputComp) {
                 inputComp.currentX = card.x;
                 inputComp.currentY = card.y;

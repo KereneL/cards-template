@@ -1,17 +1,17 @@
 import Phaser from 'phaser';
 import { worldToLocal } from '../../utils';
-import { InputCardComponent } from '../../components/input-card-component';
+import { InputComponent } from '../../components/input-component';
 import { BaseCard } from '../cards/base-card';
 import { CARD_RECT_STYLE, CARD_TWEENS } from '../../config';
-import { PlayingCardComponent } from '../../components/playing-card-component';
 
 export class CardZone extends Phaser.GameObjects.Container {
   constructor(scene, x, y, width, height, config = {}) {
     super(scene, x, y);
     this.scene = scene;
-    this.width = width;
+    this.width = width
     this.height = height;
     this.cards = [];
+    this.components = [];
 
     this.defaultCueMode = config.defaultCueMode ?? 'sortable'; //or push or shift
     this.cueIndex = null;
@@ -39,37 +39,32 @@ export class CardZone extends Phaser.GameObjects.Container {
     }
 
     this.createCueCard();
-    this.setupInteractiveZone();
+    this.addComponent(InputComponent, {
+      isHoverable: true,
+      isDraggable: false,
+      isClickable: false,
+      isDropZone: true,
+    });
   }
 
-  createBackground(){
+  createBackground() {
     this.background = this.scene.add.rectangle(0, 0, this.width, this.height, 0x000000, 0.1)
       .setOrigin(0.5)
       .setDepth(-100);
 
     this.add(this.background);
   }
-  createCounter(){
+  createCounter() {
     const counter = ""//"11/12"
-    const right = this.width/2;
-    const top = -this.height/2;
+    const right = this.width / 2;
+    const top = -this.height / 2;
     const gap = 4
-    this.counter = this.scene.add.text(right - gap,top + gap,counter).setOrigin(1,0)
+    this.counter = this.scene.add.text(right - gap, top + gap, counter).setOrigin(1, 0)
     this.add(this.counter);
-  }
-  
-  setupInteractiveZone() {
-    this.phaserZone = this.scene.add.zone(0, 0, this.width, this.height)
-      .setOrigin(0.5)
-      .setDepth(-100)
-      .setInteractive({ dropZone: true });
-
-    this.add(this.phaserZone);
-    this.phaserZone.parentContainer = this;
   }
 
   handleDragStart(card) {
-    const comp = InputCardComponent.getComp(card);
+    const comp = InputComponent.getComp(card);
     if (!comp || !this.cards.includes(card)) return;
 
     this.originalCard = card;
@@ -89,7 +84,7 @@ export class CardZone extends Phaser.GameObjects.Container {
   }
 
   handleDragEnter(card) {
-    const comp = InputCardComponent.getComp(card);
+    const comp = InputComponent.getComp(card);
     if (!comp) return;
     const originalZone = comp?.originalZone;
     if (originalZone === this) return;
@@ -113,7 +108,7 @@ export class CardZone extends Phaser.GameObjects.Container {
   }
 
   handleDragLeave(card) {
-    const comp = InputCardComponent.getComp(card);
+    const comp = InputComponent.getComp(card);
     if (!comp) return;
 
     const originalZone = comp.originalZone;
@@ -152,30 +147,28 @@ export class CardZone extends Phaser.GameObjects.Container {
   }
 
   handleDrop(card) {
-    const comp = InputCardComponent.getComp(card);
-    const fromZone = comp?.originalZone;
+    const comp = InputComponent.getComp(card);
+    const originalZone = comp?.originalZone;
 
     if (!comp || this.cueIndex === null) return;
 
-    const isSameZone = this === fromZone;
+    const isSameZone = this === originalZone;
 
     if (isSameZone && !this.cueIsInsert) {
       this.removeCueCard();
       this.hideCueCard();
-      return;
+    } else {
+
+      this.removeCard(card);
+      // Use centralized logic
+      this.addCardAt(card, this.cueIndex, { replaceCue: true });
     }
-
-    this.removeCard(card);
-
-    // Use centralized logic
-    this.addCardAt(card, this.cueIndex, { replaceCue: true });
 
     this.cueIndex = null;
     this.originalCueIndex = null;
     this.cueIsInsert = false;
     this.cueCard.visible = false;
   }
-
 
   insertCueCardAt(index) {
     const existing = this.cards.indexOf(this.cueCard);
@@ -255,7 +248,7 @@ export class CardZone extends Phaser.GameObjects.Container {
     card.parentZone = this;
     card.parentContainer = this;
 
-    InputCardComponent.getComp(card)?.refreshPosition();
+    InputComponent.getComp(card)?.refreshPosition();
     this.layoutCards();
   }
 
@@ -264,8 +257,8 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.addCardAt(card, index);
   }
 
-  seqAddCard(card){
-    return ()=>{
+  seqAddCard(card) {
+    return () => {
       this.addCard(card)
     }
   }
@@ -282,7 +275,7 @@ export class CardZone extends Phaser.GameObjects.Container {
     const worldY = card.getWorldTransformMatrix().ty;
     const local = worldToLocal(worldX, worldY, this);
     card.setPosition(local.x, local.y);
-    InputCardComponent.getComp(card)?.refreshPosition();
+    InputComponent.getComp(card)?.refreshPosition();
     oldZone.removeCard(card);
   }
 
@@ -375,7 +368,7 @@ export class CardZone extends Phaser.GameObjects.Container {
       const x = startX + i * spacing;
       const y = (card === this.cueCard) ? targetY - 4 : targetY;
 
-      const inputComp = InputCardComponent.getComp(card);
+      const inputComp = InputComponent.getComp(card);
       if (inputComp) {
         inputComp.currentX = card.x;
         inputComp.currentY = card.y;
@@ -391,5 +384,10 @@ export class CardZone extends Phaser.GameObjects.Container {
     }
 
     this.sortChildren();
+  }
+
+  addComponent(ComponentClass, ...args) {
+    const comp = new ComponentClass(this, ...args);
+    this.components.push(comp);
   }
 }

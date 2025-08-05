@@ -17,9 +17,10 @@ export class Button extends Phaser.GameObjects.Container {
         this.createButtonBody(text);
 
         this.addComponent(InputComponent, {
-            hoverable: true,
-            draggable: false,
-            clickable: true,
+            isHoverable: true,
+            isDraggable: false,
+            isClickable: true,
+            isDropZone: false,
         });
     }
 

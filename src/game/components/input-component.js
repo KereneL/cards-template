@@ -1,46 +1,54 @@
-import { CARD_RECT_STYLE } from '../config';
+import Phaser from 'phaser';
 import { BaseComponent } from './base-component';
-
 export class InputComponent extends BaseComponent {
-  static KEY = '_InputComponent';
-
-  static getComp(gameObject) {
-    return gameObject[InputComponent.KEY] || null;
-  }
-
-  static removeComp(gameObject) {
-    if (gameObject[InputComponent.KEY]) {
-      delete gameObject[InputComponent.KEY];
-    }
-  }
-
-  attach() {
-    this.gameObject[InputComponent.KEY] = this;
-  }
-
-  constructor(gameObject, config = {
-    hoverable: true,
-    draggable: true,
-    clickable: true,
-  }) {
+  constructor(gameObject, config = { isHoverable: true, isDraggable: true, isClickable: true, isDropZone: false }) {
     super(gameObject);
-    this.hoverable = config.hoverable
-    this.draggable = config.draggable
-    this.clickable = config.clickable
+    this.isHoverable = config.isHoverable
+    this.isDraggable = config.isDraggable
+    this.isClickable = config.isClickable
+    this.isDropZone = config.isDropZone
+
+    if (this.isDraggable && this.isDropZone) console.warn("Object is both isHoverable and isDraggable!:", gameObject)
+
 
     this.shouldUpdate = true;
     this.physicsEnabled = false;
-    this.isDragging = false;
+    this.enabled = true;
 
+    this.setInteractiveZone()
+    if (this.isDraggable) this.setDraggable()
+  }
+  setInteractiveZone() {
+    const gameObject = this.gameObject;
     gameObject.setInteractive({
-      draggable: this.draggable,
+      draggable: this.isDraggable,
+      dropZone: this.isDropZone,
       hitArea: new Phaser.Geom.Rectangle(
-        0,
-        0,
-        gameObject.displayWidth,
-        gameObject.displayHeight
-      ),
+        0, 0,
+        gameObject.displayWidth, gameObject.displayHeight),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains
     });
+
   }
+  setDraggable() {
+    const gameObject = this.gameObject;
+    this.isBeingDragged = false;
+    this.targetX = gameObject.x;
+    this.targetY = gameObject.y;
+    this.currentX = gameObject.x;
+    this.currentY = gameObject.y;
+    this.originalZone = null;
+    this.lastPointerX = null;
+    this.currentRotation = 0;
+    this.rotationTarget = 0;
+    this.velocityX = 0;
+
+    this.refreshPosition = () => {
+      this.currentX = this.gameObject.x;
+      this.currentY = this.gameObject.y;
+      this.physicsEnabled = true;
+    }
+    gameObject.on('positionChanged', this.refreshPosition, this.scene);
+  }
+
 }

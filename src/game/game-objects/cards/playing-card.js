@@ -1,7 +1,8 @@
 import { BaseCard } from './base-card';
 import { PlayingCardComponent } from '../../components/playing-card-component';
 import { CARD_RECT_STYLE, CARD_TEXT_STYLE } from '../../config';
-import { InputCardComponent } from '../../components/input-card-component';
+import { InputComponent } from '../../components/input-component';
+
 const SPRITESHEET_KEY = 'spritesheet-cards'
 
 export class PlayingCard extends BaseCard {
@@ -9,7 +10,7 @@ export class PlayingCard extends BaseCard {
         super({ scene });
 
         this.addComponent(PlayingCardComponent, cardSuit, cardValue);
-        this.addComponent(InputCardComponent);
+        this.addComponent(InputComponent);
         this.name = `${cardValue.label}${cardSuit.label}`
         this.type = 'PlayingCard'
         this.loadTexture()

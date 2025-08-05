@@ -1,7 +1,7 @@
 
 import Phaser from 'phaser';
-import { InputCardComponent } from './components/input-card-component';
 import { CARD_TWEENS } from './config'
+import { InputComponent } from './components/input-component';
 
 export function worldToLocal(worldX, worldY, container) {
   const matrix = new Phaser.GameObjects.Components.TransformMatrix();
@@ -20,7 +20,7 @@ export function CardPhysicsSystem(scene, pointer = scene.input.activePointer) {
   } = CARD_TWEENS;
 
   for (const card of scene.activeCards) {
-    const comp = InputCardComponent.getComp(card);
+    const comp = InputComponent.getComp(card);
 if (!comp || !comp.physicsEnabled || !comp.shouldUpdate) continue;
 
     // Position interpolation
@@ -31,7 +31,7 @@ if (!comp || !comp.physicsEnabled || !comp.shouldUpdate) continue;
     card.setPosition(finalX, comp.currentY);
 
     // Rotation logic
-    if (comp.isDragging) {
+    if (comp.isBeingDragged) {
       if (comp.lastPointerX !== null) {
         const deltaX = pointer.x - comp.lastPointerX;
         comp.velocityX = Phaser.Math.Linear(comp.velocityX, deltaX, 0.5);
