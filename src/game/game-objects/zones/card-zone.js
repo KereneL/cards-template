@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { worldToLocal } from '../../utils';
 import { InputComponent } from '../../components/input-component';
 import { BaseCard } from '../cards/base-card';
-import { CARD_RECT_STYLE, CARD_TWEENS } from '../../config';
+import { CARD_RECT_STYLE, CARD_TWEENS, ZONE_COLORS } from '../../config';
 
 export class CardZone extends Phaser.GameObjects.Container {
   constructor(scene, x, y, width, height, config = {}) {
@@ -48,7 +48,9 @@ export class CardZone extends Phaser.GameObjects.Container {
   }
 
   createBackground() {
+    const {ROUNDED_RECT_RADIUS} = ZONE_COLORS
     this.background = this.scene.add.rectangle(0, 0, this.width, this.height, 0x000000, 0.1)
+      .setRounded(ROUNDED_RECT_RADIUS)
       .setOrigin(0.5)
       .setDepth(-100);
 

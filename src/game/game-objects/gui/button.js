@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CARD_TWEENS, PHASER_COLORS } from '../../config';
+import { CARD_TWEENS, PHASER_COLORS, ZONE_COLORS } from '../../config';
 import { InputComponent } from '../../components/input-component';
 const { RED, BLUE } = PHASER_COLORS;
 const { CLICKED_SCALE, HOVERED_SCALE, STANDARD_SCALE, SHORT_DURATION, DEFAULT_EASE } = CARD_TWEENS;
@@ -25,7 +25,11 @@ export class Button extends Phaser.GameObjects.Container {
     }
 
     createButtonBody(text) {
-        this.graphic = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, 100, 32, this.idleColor).setOrigin(0.5);
+        const {ROUNDED_RECT_RADIUS} = ZONE_COLORS
+        this.graphic = new Phaser.GameObjects.Rectangle(this.scene, 0, 0, 100, 32, this.idleColor)
+        .setOrigin(0.5)
+        .setRounded(ROUNDED_RECT_RADIUS);
+
         this.text = new Phaser.GameObjects.Text(this.scene, 0, 0, text, {
             fontFamily: 'pixellari',
             fontSize: 16,
