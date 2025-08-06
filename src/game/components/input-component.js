@@ -10,7 +10,6 @@ export class InputComponent extends BaseComponent {
 
     if (this.isDraggable && this.isDropZone) console.warn("Object is both isHoverable and isDraggable!:", gameObject)
 
-
     this.shouldUpdate = true;
     this.physicsEnabled = false;
     this.enabled = true;
@@ -50,5 +49,4 @@ export class InputComponent extends BaseComponent {
     }
     gameObject.on('positionChanged', this.refreshPosition, this.scene);
   }
-
 }

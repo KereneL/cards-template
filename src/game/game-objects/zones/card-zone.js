@@ -200,14 +200,14 @@ export class CardZone extends Phaser.GameObjects.Container {
   }
 
   showCueCard() {
-    const { SHORTER_DURATION, CARD_TILT } = CARD_TWEENS
+    const { SHORT_DURATION, SHORTER_DURATION, CUE_CARD_TILT } = CARD_TWEENS
     const { CUE_ALPHA } = CARD_RECT_STYLE
     this.cueCard.visible = true;
     this.scene.tweens.add({
       targets: this.cueCard,
       alpha: { from: 0, to: CUE_ALPHA },
-      angle: { from: -CARD_TILT, to: CARD_TILT },
-      duration: SHORTER_DURATION
+      angle: { from: CUE_CARD_TILT, to: -CUE_CARD_TILT },
+      duration: SHORT_DURATION
     })
     this.layoutCards();
   }

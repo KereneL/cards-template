@@ -32,7 +32,7 @@ export class BaseCard extends Phaser.GameObjects.Container {
 
     this.cardBody = new Phaser.GameObjects.Container(this.scene, 0, 0, [this.cardFace])
 
-    this.circTween = applyCircularFloatTween(this.cardBody);
+    //this.circTween = applyCircularFloatTween(this.cardBody);
 
     this.width = cardWidth
     this.height = cardHeight

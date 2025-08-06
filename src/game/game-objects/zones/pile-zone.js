@@ -15,16 +15,6 @@ export class PileZone extends CardZone {
         this.allowTakingCards = false;
 
     }
-
-    // handleDragEnter() { return; }
-    // handleDragLeave() { return; }
-    // handleDragOver() { return; }
-    // handleDrop() { return; }
-    // insertCueCardAt() { return; }
-    // removeCueCard() { return; }
-    // getDropCueIndex() { return; }
-    // showCueCard() { return; }
-
     layoutCards() {
         const layoutCount = this.cards.length;
         if (layoutCount === 0) return;
@@ -32,18 +22,19 @@ export class PileZone extends CardZone {
         const { CARD_BASE_WIDTH, WIDTH_SCALE } = CARD_RECT_STYLE
         const cardWidth = CARD_BASE_WIDTH * WIDTH_SCALE
 
-        const availableWidth = Math.max(this.width - cardWidth * 2, 0);
+        const availableWidth = this.width - cardWidth * 2;
 
-        const spacing = 1.25
+        const spacingX = 0.75
+        const spacingY = -0.3
 
-        const totalWidth = availableWidth;
+        const totalWidth = (layoutCount - 1) * spacingX;
         const startX = -totalWidth / 2;
-        const startY = 0;
+        const targetY = 20;
 
         for (let i = 0; i < layoutCount; i++) {
             const card = this.cards[i];
-            const x = startX;
-            const y = startY - i * spacing;
+            const x = startX + i * spacingX;
+            const y = targetY + i * spacingY;
 
             const inputComp = InputComponent.getComp(card);
             if (inputComp) {

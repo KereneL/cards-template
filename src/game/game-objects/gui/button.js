@@ -5,7 +5,7 @@ const { RED, BLUE } = PHASER_COLORS;
 const { CLICKED_SCALE, HOVERED_SCALE, STANDARD_SCALE, SHORT_DURATION, DEFAULT_EASE } = CARD_TWEENS;
 
 export class Button extends Phaser.GameObjects.Container {
-    constructor({ scene, idleColor, hoverColor, clickedColor, text }) {
+    constructor({ scene, idleColor, hoverColor, clickedColor, text, onClick }) {
         super(scene, 0, 0);
         this.scene = scene;
         this.components = [];
@@ -13,7 +13,7 @@ export class Button extends Phaser.GameObjects.Container {
         this.idleColor = idleColor;
         this.hoverColor = hoverColor;
         this.clickedColor = clickedColor;
-
+        if (onClick) this.onClick = onClick;
         this.createButtonBody(text);
 
         this.addComponent(InputComponent, {
@@ -67,6 +67,7 @@ export class Button extends Phaser.GameObjects.Container {
             ease: DEFAULT_EASE,
             duration: SHORT_DURATION,
         })
+        if (this.onClick) this.onClick();
     }
     onPointerOut(pointer) {
         this.changeApperance(this.idleColor, {

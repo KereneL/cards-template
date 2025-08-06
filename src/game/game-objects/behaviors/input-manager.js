@@ -159,7 +159,6 @@ export class InputManager {
             })
         }
     }
-
     dragEndCleanup(gameObject, originalZone, dropZone) {
         if (gameObject) {
             gameObject?.scaleAfterDrag?.();
@@ -181,6 +180,7 @@ export class InputManager {
         this.lastOriginalZone = null;
         this.lastDropZone = null;
     }
+    
     checkForValidMove(gameObject) {
         // is zone dropped into is actually a DropZone?
         const dropZone = this.lastDropZone;
