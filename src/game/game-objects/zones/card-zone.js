@@ -26,8 +26,8 @@ export class CardZone extends Phaser.GameObjects.Container {
 
     if (config.name) {
       const { width: boundsWidth, height: boundsHeight } = this.getBounds()
-      const textX = -boundsWidth / 2 + 4
-      const textY = -boundsHeight / 2 + 4
+      const textX = -boundsWidth / 2 + 8
+      const textY = -boundsHeight / 2 + 8
       this.text = scene.add.text(textX, textY, config.name, {
         fontFamily: 'pixellari',
         fontSize: 16 * 1.5,

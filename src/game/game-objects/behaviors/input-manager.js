@@ -15,6 +15,7 @@ export class InputManager {
         this.didJustDrag = false;
         this.lastOriginalZone = null;
         this.lastDropZone = null;
+        this.inputEnabled = true;
 
         const inputEvents = [
             { evSymbol: 'gameobjectover', callback: this.gameObjectOver },
@@ -41,19 +42,19 @@ export class InputManager {
     // HOVER
     gameObjectOver(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!comp || !comp.isHoverable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isHoverable || comp.isBeingDragged) return;
 
         gameObject?.onPointerOver?.(pointer)
     }
     gameObjectMove(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!comp || !comp.isHoverable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isHoverable || comp.isBeingDragged) return;
 
         gameObject?.onPointerMove?.(pointer)
     }
     gameObjectOut(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!comp || !comp.isHoverable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isHoverable || comp.isBeingDragged) return;
 
         gameObject?.onPointerOut?.(pointer)
     }
@@ -61,19 +62,21 @@ export class InputManager {
     // CLICK
     gameObjectDown(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!comp || !comp.isClickable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isClickable || comp.isBeingDragged) return;
+
         gameObject?.onPointerDown?.(pointer)
     }
     gameObjectUp(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!comp || !comp.isClickable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isClickable || comp.isBeingDragged) return;
+
         gameObject?.onPointerUp?.(pointer)
     }
 
     // DRAG
     onDragStart(pointer, gameObject) {
         const comp = InputComponent.getComp(gameObject);
-        if (!comp || !comp.isDraggable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isDraggable || comp.isBeingDragged) return;
 
         this.lastOriginalZone = gameObject.parentZone;
         comp.isBeingDragged = true;
@@ -90,26 +93,26 @@ export class InputManager {
     }
     onDrag(pointer, gameObject, dragX, dragY) {
         const comp = InputComponent.getComp(gameObject);
-        if (!comp || !comp.isDraggable || !comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isDraggable || !comp.isBeingDragged) return;
 
         comp.targetX = dragX;
         comp.targetY = dragY;
     }
     onDragEnter(pointer, gameObject, dropZone) {
         const comp = InputComponent.getComp(dropZone);
-        if (!comp || !comp.isDropZone) return;
+        if (!this.inputEnabled || !comp || !comp.isDropZone) return;
 
         dropZone?.handleDragEnter?.(gameObject);
     }
     onDragLeave(pointer, gameObject, dropZone) {
         const comp = InputComponent.getComp(dropZone);
-        if (!comp || !comp.isDropZone) return;
+        if (!this.inputEnabled || !comp || !comp.isDropZone) return;
 
         dropZone?.handleDragLeave?.(gameObject);
     }
     onDragOver(pointer, gameObject, dropZone) {
         const comp = InputComponent.getComp(dropZone);
-        if (!comp || !comp.isDropZone) return;
+        if (!this.inputEnabled || !comp || !comp.isDropZone) return;
 
         dropZone?.handleDragOver?.(gameObject);
     }
@@ -117,8 +120,10 @@ export class InputManager {
         this.lastDropZone = dropZone
     }
     onDragEnd(pointer, gameObject) {
-        const isValidMove = this.checkForValidMove(gameObject);
         const droppedComp = InputComponent.getComp(gameObject);
+        if (!this.inputEnabled || !droppedComp || !droppedComp.isDraggable) return;
+        
+        const isValidMove = this.checkForValidMove(gameObject);
 
         const originalZone = droppedComp?.originalZone;
         const dropZone = this.lastDropZone;

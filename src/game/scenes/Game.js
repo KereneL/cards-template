@@ -21,9 +21,10 @@ export class Game extends Phaser.Scene {
 
         const {SHORTER_DURATION,SHORT_DURATION} = CARD_TWEENS
         const { width: gameWidth , height: gameHeight } = this.sys.game.canvas;
-        //const spotlightA = this.lights.addLight(gameWidth/2, 0, gameWidth/2).setIntensity(10).setColor(0xFF0000)
-        // const spotlightB = this.lights.addLight(gameWidth/2, gameHeight, gameWidth/2).setIntensity(10).setColor(0x0000FF)
-        //this.lights.setAmbientColor(0x0ffffF)
+        // const spotlightA = this.lights.addLight(0, 0, gameWidth).setIntensity(10).setColor(0xFF0000)
+        // const spotlightB = this.lights.addLight(gameWidth, gameHeight, gameWidth).setIntensity(10).setColor(0xFFFF00)
+        // const spotlightC = this.lights.addLight(gameWidth, 0, gameWidth).setIntensity(10).setColor(0x00FF00)
+        // const spotlightD = this.lights.addLight(0, gameHeight, gameWidth).setIntensity(10).setColor(0x0000FF)
 
         this.cameras.main.setBackgroundColor(COLORS.GREEN.TERTIARY);
         this.input.dragDistanceThreshold = GUI.DRAG_DISTANCE_THRESHOLD;
@@ -31,26 +32,32 @@ export class Game extends Phaser.Scene {
         this.createDeck();
         this.deck.shuffle();
         const height = 162
-        this.deckZone = new PileZone(this, 120, 425, 125, height, { name: 'Deck', defaultCueMode: 'deck' });
-        this.enemy = new CardZone(this, 512, 125, 600, height, {name: 'Opponent Sortable', defaultCueMode: 'sortable'});
+        this.deckZone = new PileZone(this, 120, 650, 125, height, { name: 'Deck', defaultCueMode: 'deck' });
+        this.hand = new CardZone(this, 536, 650, 600, height, { name: 'Hand One', defaultCueMode: 'sortable' });
+        this.enemy = new CardZone(this, 536, 125, 600, height, {name: 'Hand Two', defaultCueMode: 'sortable'});
         // this.add.triangle(212,300,0,-75,0,+75,75,0, 0).setOrigin(0).setAlpha(0.25)
         // this.tableu = new CardZone(this, 512, 300, 600, height, {name: 'Shift Only', defaultCueMode: 'shift'} );
-        // this.add.triangle(812,475,0,-75,0,+75,-75,0, 0).setOrigin(0).setAlpha(0.25)
-        // this.tableu = new CardZone(this, 512, 475, 600, height, {name: 'Push Only', defaultCueMode: 'push'} );
-        this.hand = new CardZone(this, 512, 650, 600, height, { name: 'Player Sortable', defaultCueMode: 'sortable' });
+        this.add.triangle(812,400,0,-75,0,+75,-75,0, 0).setOrigin(0).setAlpha(0.25)
+        this.tableu = new CardZone(this, 512, 400, 600, height, {name: 'Push Only', defaultCueMode: 'push'} );
 
-        this.add.existing(new Button({scene:this, text: "by Rank", idleColor:RED.SECONDARY._color, hoverColor:RED.TERTIARY._color, clickedColor:RED.PRIMARY._color, onClick: ()=>{console.log("Red")}})
-        .setPosition(512+650/2+35,this.hand.getBounds().bottom - 16))
-        this.add.existing(new Button({scene:this, text: "by Suit", idleColor:BLUE.SECONDARY._color, hoverColor:BLUE.TERTIARY._color, clickedColor:BLUE.PRIMARY._color, onClick: ()=>{console.log("Blue")}})
-        .setPosition(512+650/2+35,this.hand.getBounds().bottom - 16 - 32 - 10))
+        const handBounds = this.hand.getBounds()
+        this.add.existing(new Button({scene:this, text: "Sort by Rank", idleColor:RED.SECONDARY._color, hoverColor:RED.TERTIARY._color, clickedColor:RED.PRIMARY._color, onClick: ()=>{this.sortByRank(this.hand.cards); this.hand.layoutCards()}})
+        .setPosition(handBounds.right +60, handBounds.bottom - 16))
+        this.add.existing(new Button({scene:this, text: "Sort by Suit", idleColor:BLUE.SECONDARY._color, hoverColor:BLUE.TERTIARY._color, clickedColor:BLUE.PRIMARY._color, onClick: ()=>{this.sortBySuit(this.hand.cards); this.hand.layoutCards()}})
+
+        .setPosition(handBounds.right +60,handBounds.bottom - 16 - 32 - 10))
         this.seq = [];
 
         this.dealSomeCards(40, this.deckZone);
         this.playActionSequence(SHORTER_DURATION)
 
-        this.dealSomeCards(6, this.hand, true);        
-        this.dealSomeCards(6, this.enemy, true);
-        this.playActionSequence(SHORT_DURATION)
+        const flipUpCallback = (cards)=>{
+            cards.forEach((card, indx)=> {
+                this.seq.push(card.flipToFaceUp)
+        })}
+        this.dealSomeCards(6, this.hand, true, flipUpCallback);        
+        this.dealSomeCards(6, this.enemy, true, flipUpCallback);
+        this.playActionSequence(SHORT_DURATION);
 
         this.inputManager = InputManager.getInstance(this)
     }
@@ -65,34 +72,49 @@ export class Game extends Phaser.Scene {
         const deckCardsArr = createRegularDeck(this);
         this.deck = new BaseDeck(this, deckCardsArr);
     }
-    dealSomeCards(howManyCards, zone, revealCard) {
+    dealSomeCards(howManyCards, zone, revealCards, callback) {
         const selected = [];
         const deckCards = this.deck.getChildren();
 
         for (let i = 0; i < howManyCards; i++) {
             if (deckCards.length > 0) {
                 const card = deckCards.pop()
-                if (revealCard) card.loadTexture()
                 selected.push(card);
             } else {
                 break;
             }
         }
 
-        Phaser.Utils.Array.StableSort(selected, (a, b) => {
-            const aComp = PlayingCardComponent.getComp(a);
-            const bComp = PlayingCardComponent.getComp(b);
-            return bComp.value.sequenceAs[0] - aComp.value.sequenceAs[0];
-        });
-
+        // this.sortByValue(selected)
+        
         selected.forEach((card)=> {
             card.addComponent(InputComponent);
             this.seq.push(zone.seqAddCard(card))
         })
-
+        if (revealCards) {
+        selected.forEach((card)=> {
+             this.seq.push(()=>{card.flipToFaceUp()})
+        })
+        }
         this.activeCards.push(...selected);
         
     }
+
+    sortBySuit(cardArr) {
+        Phaser.Utils.Array.StableSort(cardArr, (a, b) => {
+            const aComp = PlayingCardComponent.getComp(a);
+            const bComp = PlayingCardComponent.getComp(b);
+            return ((bComp.suit.sequenceAs * 100 + bComp.value.sequenceAs[0]) - (aComp.suit.sequenceAs * 100 + aComp.value.sequenceAs[0])) ;
+        });
+    }
+    sortByRank(cardArr) {
+        Phaser.Utils.Array.StableSort(cardArr, (a, b) => {
+            const aComp = PlayingCardComponent.getComp(a);
+            const bComp = PlayingCardComponent.getComp(b);
+            return ((bComp.value.sequenceAs[0] * 100 + bComp.suit.sequenceAs) - (aComp.value.sequenceAs[0] * 100 + aComp.suit.sequenceAs));
+        });
+    }
+
     update() {
         CardPhysicsSystem(this)
     }

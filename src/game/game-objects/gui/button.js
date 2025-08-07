@@ -14,6 +14,7 @@ export class Button extends Phaser.GameObjects.Container {
         this.hoverColor = hoverColor;
         this.clickedColor = clickedColor;
         if (onClick) this.onClick = onClick;
+        
         this.createButtonBody(text);
 
         this.addComponent(InputComponent, {
