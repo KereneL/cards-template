@@ -12,6 +12,7 @@ export class InputManager {
 
     constructor(scene) {
         this.scene = scene;
+        this.isDragging = false;
         this.didJustDrag = false;
         this.lastOriginalZone = null;
         this.lastDropZone = null;
@@ -42,19 +43,19 @@ export class InputManager {
     // HOVER
     gameObjectOver(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!this.inputEnabled || !comp || !comp.isHoverable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isEnabled || !comp.isEnabled || !comp.isHoverable || comp.isBeingDragged) return;
 
         gameObject?.onPointerOver?.(pointer)
     }
     gameObjectMove(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!this.inputEnabled || !comp || !comp.isHoverable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isEnabled || !comp.isHoverable || comp.isBeingDragged) return;
 
         gameObject?.onPointerMove?.(pointer)
     }
     gameObjectOut(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!this.inputEnabled || !comp || !comp.isHoverable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isEnabled || !comp.isHoverable || comp.isBeingDragged) return;
 
         gameObject?.onPointerOut?.(pointer)
     }
@@ -62,13 +63,13 @@ export class InputManager {
     // CLICK
     gameObjectDown(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!this.inputEnabled || !comp || !comp.isClickable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isEnabled || !comp.isClickable || comp.isBeingDragged) return;
 
         gameObject?.onPointerDown?.(pointer)
     }
     gameObjectUp(pointer, gameObject, event) {
         const comp = InputComponent.getComp(gameObject);
-        if (!this.inputEnabled || !comp || !comp.isClickable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isEnabled || !comp.isClickable || comp.isBeingDragged) return;
 
         gameObject?.onPointerUp?.(pointer)
     }
@@ -76,7 +77,9 @@ export class InputManager {
     // DRAG
     onDragStart(pointer, gameObject) {
         const comp = InputComponent.getComp(gameObject);
-        if (!this.inputEnabled || !comp || !comp.isDraggable || comp.isBeingDragged) return;
+        if (!this.inputEnabled || !comp || !comp.isEnabled || !comp.isDraggable || comp.isBeingDragged) return;
+
+        this.isDragging = true;
 
         this.lastOriginalZone = gameObject.parentZone;
         comp.isBeingDragged = true;
@@ -93,26 +96,26 @@ export class InputManager {
     }
     onDrag(pointer, gameObject, dragX, dragY) {
         const comp = InputComponent.getComp(gameObject);
-        if (!this.inputEnabled || !comp || !comp.isDraggable || !comp.isBeingDragged) return;
+        if (!this.inputEnabled || !this.isDragging ||  !comp || !comp.isEnabled || !comp.isDraggable || !comp.isBeingDragged) return;
 
         comp.targetX = dragX;
         comp.targetY = dragY;
     }
     onDragEnter(pointer, gameObject, dropZone) {
         const comp = InputComponent.getComp(dropZone);
-        if (!this.inputEnabled || !comp || !comp.isDropZone) return;
+        if (!this.inputEnabled || !this.isDragging ||  !comp || !comp.isEnabled || !comp.isDropZone) return;
 
         dropZone?.handleDragEnter?.(gameObject);
     }
     onDragLeave(pointer, gameObject, dropZone) {
         const comp = InputComponent.getComp(dropZone);
-        if (!this.inputEnabled || !comp || !comp.isDropZone) return;
+        if (!this.inputEnabled || !this.isDragging ||  !comp || !comp.isEnabled || !comp.isDropZone) return;
 
         dropZone?.handleDragLeave?.(gameObject);
     }
     onDragOver(pointer, gameObject, dropZone) {
         const comp = InputComponent.getComp(dropZone);
-        if (!this.inputEnabled || !comp || !comp.isDropZone) return;
+        if (!this.inputEnabled || !this.isDragging ||  !comp || !comp.isEnabled || !comp.isDropZone) return;
 
         dropZone?.handleDragOver?.(gameObject);
     }
@@ -120,13 +123,14 @@ export class InputManager {
         this.lastDropZone = dropZone
     }
     onDragEnd(pointer, gameObject) {
+        this.isDragging = false;
         const droppedComp = InputComponent.getComp(gameObject);
-        if (!this.inputEnabled || !droppedComp || !droppedComp.isDraggable) return;
-        
-        const isValidMove = this.checkForValidMove(gameObject);
+        if (!this.inputEnabled || !droppedComp || !droppedComp.isEnabled || !droppedComp.isDraggable) return;
 
+        const dropZone = this.lastDropZone
+        const dropZoneComp = InputComponent.getComp(dropZone);
+        const isValidMove = this.checkForValidMove(gameObject);
         const originalZone = droppedComp?.originalZone;
-        const dropZone = this.lastDropZone;
 
         const cueIdx = originalZone.cards.indexOf(originalZone.cueCard);
         if (cueIdx !== -1) {
@@ -163,6 +167,7 @@ export class InputManager {
                 this.dragEndCleanup(gameObject, originalZone, dropZone)
             })
         }
+        
     }
     dragEndCleanup(gameObject, originalZone, dropZone) {
         if (gameObject) {

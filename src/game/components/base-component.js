@@ -10,10 +10,12 @@ export class BaseComponent {
   }
 
   static getComp(gameObject) {
+    if (!gameObject) return null;
     return gameObject[`_${this.name}`] || null;
   }
-
+  
   static removeComp(gameObject) {
+    if (!gameObject) return;
     delete gameObject[`_${this.name}`];
   }
 

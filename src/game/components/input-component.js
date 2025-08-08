@@ -1,22 +1,29 @@
 import Phaser from 'phaser';
 import { BaseComponent } from './base-component';
 export class InputComponent extends BaseComponent {
-  constructor(gameObject, config = { isHoverable: true, isDraggable: true, isClickable: true, isDropZone: false }) {
+  constructor(gameObject, 
+    config = { 
+      isHoverable: true,
+      isDraggable: true,
+      isClickable: true,
+      isDropZone: false,
+      isEnabled: true }) {
     super(gameObject);
-    this.isHoverable = config.isHoverable
-    this.isDraggable = config.isDraggable
-    this.isClickable = config.isClickable
-    this.isDropZone = config.isDropZone
+    this.isHoverable = config.isHoverable;
+    this.isDraggable = config.isDraggable;
+    this.isClickable = config.isClickable;
+    this.isDropZone = config.isDropZone;
+    this.isEnabled = config.isEnabled;
 
     if (this.isDraggable && this.isDropZone) console.warn("Object is both isHoverable and isDraggable!:", gameObject)
+    this.enabled = true;
 
     this.shouldUpdate = true;
     this.physicsEnabled = false;
-    this.enabled = true;
 
     this.setInteractiveZone()
-    if (this.isDraggable) this.setDraggable()
   }
+
   setInteractiveZone() {
     const gameObject = this.gameObject;
     gameObject.setInteractive({
@@ -28,6 +35,7 @@ export class InputComponent extends BaseComponent {
       hitAreaCallback: Phaser.Geom.Rectangle.Contains
     });
 
+    if(this.isDraggable){this.setDraggable()}
   }
   setDraggable() {
     const gameObject = this.gameObject;
@@ -41,7 +49,7 @@ export class InputComponent extends BaseComponent {
     this.currentRotation = 0;
     this.rotationTarget = 0;
     this.velocityX = 0;
-
+    
     this.refreshPosition = () => {
       this.currentX = this.gameObject.x;
       this.currentY = this.gameObject.y;

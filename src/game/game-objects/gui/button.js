@@ -22,6 +22,7 @@ export class Button extends Phaser.GameObjects.Container {
             isDraggable: false,
             isClickable: true,
             isDropZone: false,
+            isEnabled: true,
         });
     }
 

@@ -44,6 +44,7 @@ export class CardZone extends Phaser.GameObjects.Container {
       isDraggable: false,
       isClickable: false,
       isDropZone: true,
+      isEnabled: true,
     });
   }
 
@@ -152,20 +153,18 @@ export class CardZone extends Phaser.GameObjects.Container {
     const comp = InputComponent.getComp(card);
     const originalZone = comp?.originalZone;
 
-    if (!comp || this.cueIndex === null) return;
-
+    if (!comp) return;
+    
     const isSameZone = this === originalZone;
 
     if (isSameZone && !this.cueIsInsert) {
       this.removeCueCard();
       this.hideCueCard();
     } else {
-
       this.removeCard(card);
-      // Use centralized logic
       this.addCardAt(card, this.cueIndex, { replaceCue: true });
     }
-
+    
     this.cueIndex = null;
     this.originalCueIndex = null;
     this.cueIsInsert = false;
