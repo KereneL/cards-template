@@ -4,6 +4,10 @@ import { InputComponent } from '../../components/input-component';
 import { BaseCard } from '../cards/base-card';
 import { CARD_RECT_STYLE, CARD_TWEENS, ZONE_COLORS } from '../../config';
 
+    const textStyle = {
+      fontFamily: 'pixellari',
+      fontSize: 20,
+    }
 export class CardZone extends Phaser.GameObjects.Container {
   constructor(scene, x, y, width, height, config = {}) {
     super(scene, x, y);
@@ -12,31 +16,19 @@ export class CardZone extends Phaser.GameObjects.Container {
     this.height = height;
     this.cards = [];
     this.components = [];
-
+    this.name = config?.name
     this.defaultCueMode = config.defaultCueMode ?? 'sortable'; //or push or shift
     this.cueIndex = null;
 
     this.allowDroppingCards = true;
     this.allowTakingCards = true;
-    this.createBackground()
-    this.createCounter()
+    this.amount = 0;
+    this.maxAmount = config?.maxAmount;
+    this.createBackground();
+    this.createTexts();
 
     this.setSize(width, height);
     scene.add.existing(this);
-
-    if (config.name) {
-      const { width: boundsWidth, height: boundsHeight } = this.getBounds()
-      const textX = -boundsWidth / 2 + 8
-      const textY = -boundsHeight / 2 + 8
-      this.text = scene.add.text(textX, textY, config.name, {
-        fontFamily: 'pixellari',
-        fontSize: 16 * 1.5,
-      })
-        .setOrigin(0)
-        .setDepth(-90);
-      this.name = config.name
-      this.add(this.text);
-    }
 
     this.createCueCard();
     this.addComponent(InputComponent, {
@@ -49,7 +41,7 @@ export class CardZone extends Phaser.GameObjects.Container {
   }
 
   createBackground() {
-    const {ROUNDED_RECT_RADIUS} = ZONE_COLORS
+    const { ROUNDED_RECT_RADIUS } = ZONE_COLORS
     this.background = this.scene.add.rectangle(0, 0, this.width, this.height, 0x000000, 0.1)
       .setRounded(ROUNDED_RECT_RADIUS)
       .setOrigin(0.5)
@@ -57,13 +49,38 @@ export class CardZone extends Phaser.GameObjects.Container {
 
     this.add(this.background);
   }
-  createCounter() {
-    const counter = ""//"11/12"
-    const right = this.width / 2;
-    const top = -this.height / 2;
-    const gap = 4
-    this.counter = this.scene.add.text(right - gap, top + gap, counter).setOrigin(1, 0)
-    this.add(this.counter);
+  createTexts() {
+    this.createNameText();
+    this.createCounterText();
+  }
+  createNameText() {
+    if (!this.name) return;
+
+    const { width: boundsWidth, height: boundsHeight } = this.getBounds()
+
+    const nameX = -boundsWidth / 2 + 8
+    const nameY = -boundsHeight / 2 + 8
+    this.nameText = this.scene.add.text(nameX, nameY, this.name, textStyle)
+      .setOrigin(0, 0)
+      .setDepth(-90);
+    this.add(this.nameText);
+  }
+  createCounterText() {
+    const { width: boundsWidth, height: boundsHeight } = this.getBounds()
+
+    const counterX = boundsWidth / 2 - 8
+    const counterY = -boundsHeight / 2 + 8
+    this.counterText = this.scene.add.text(counterX, counterY, "0", textStyle)
+      .setOrigin(1, 0)
+      .setDepth(-90);
+    this.add(this.counterText);
+    this.updateCounter();
+  }
+  updateCounter() {
+    const amount = this.cards.length;
+    const amountMax = (this.maxAmount) ? `/${this.maxAmount}` : '';
+    const counterText = `${amount}${amountMax}`
+    this.counterText.setText(counterText)
   }
 
   handleDragStart(card) {
@@ -154,7 +171,7 @@ export class CardZone extends Phaser.GameObjects.Container {
     const originalZone = comp?.originalZone;
 
     if (!comp) return;
-    
+
     const isSameZone = this === originalZone;
 
     if (isSameZone && !this.cueIsInsert) {
@@ -164,7 +181,7 @@ export class CardZone extends Phaser.GameObjects.Container {
       this.removeCard(card);
       this.addCardAt(card, this.cueIndex, { replaceCue: true });
     }
-    
+
     this.cueIndex = null;
     this.originalCueIndex = null;
     this.cueIsInsert = false;
@@ -250,6 +267,7 @@ export class CardZone extends Phaser.GameObjects.Container {
     card.parentContainer = this;
 
     InputComponent.getComp(card)?.refreshPosition();
+    this.updateCounter();
     this.layoutCards();
   }
 
@@ -267,6 +285,7 @@ export class CardZone extends Phaser.GameObjects.Container {
   removeCard(card) {
     const index = this.cards.indexOf(card);
     if (index !== -1) this.cards.splice(index, 1);
+    this.updateCounter();
     this.layoutCards();
   }
 

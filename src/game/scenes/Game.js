@@ -32,7 +32,8 @@ export class Game extends Phaser.Scene {
         this.createDeck();
         this.deck.shuffle();
         const height = 162
-        this.deckZone = new PileZone(this, 120, 650, 125, height, { name: 'Deck', defaultCueMode: 'deck' });
+        console.log(this.deck)
+        this.deckZone = new PileZone(this, 120, 650, 125, height, { name: 'Deck', defaultCueMode: 'deck', maxAmount: this.deck.getLength() });
         this.hand = new CardZone(this, 536, 650, 600, height, { name: 'Hand One', defaultCueMode: 'sortable' });
         this.enemy = new CardZone(this, 536, 125, 600, height, { name: 'Hand Two', defaultCueMode: 'sortable' });
         // this.add.triangle(212,300,0,-75,0,+75,75,0, 0).setOrigin(0).setAlpha(0.25)
@@ -59,9 +60,9 @@ export class Game extends Phaser.Scene {
                 this.seq.push(card.flipToFaceUp)
             })
         }
-        this.dealSomeCards(6, this.hand, true, flipUpCallback);
-        this.dealSomeCards(6, this.enemy, true, flipUpCallback);
-        this.playActionSequence(SHORT_DURATION);
+        this.dealSomeCards(20, this.hand, true, flipUpCallback);
+        //this.dealSomeCards(6, this.enemy, true, flipUpCallback);
+        this.playActionSequence(SHORTER_DURATION);
 
     }
     playActionSequence(delay) {

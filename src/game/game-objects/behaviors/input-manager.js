@@ -12,11 +12,11 @@ export class InputManager {
 
     constructor(scene) {
         this.scene = scene;
-        this.isDragging = false;
-        this.didJustDrag = false;
-        this.lastOriginalZone = null;
-        this.lastDropZone = null;
         this.inputEnabled = true;
+
+        this.isDragging = false;
+        this.draggedObject = null;
+        this.lastDropZone = null;
 
         const inputEvents = [
             { evSymbol: 'gameobjectover', callback: this.gameObjectOver },
@@ -80,8 +80,9 @@ export class InputManager {
         if (!this.inputEnabled || !comp || !comp.isEnabled || !comp.isDraggable || comp.isBeingDragged) return;
 
         this.isDragging = true;
+        this.draggedObject = gameObject;
 
-        this.lastOriginalZone = gameObject.parentZone;
+        // this.lastOriginalZone = gameObject.parentZone;
         comp.isBeingDragged = true;
         comp.shouldUpdate = true;
         comp.lastPointerX = pointer.x;
@@ -123,13 +124,12 @@ export class InputManager {
         this.lastDropZone = dropZone
     }
     onDragEnd(pointer, gameObject) {
-        this.isDragging = false;
         const droppedComp = InputComponent.getComp(gameObject);
         if (!this.inputEnabled || !droppedComp || !droppedComp.isEnabled || !droppedComp.isDraggable) return;
 
         const dropZone = this.lastDropZone
-        const dropZoneComp = InputComponent.getComp(dropZone);
-        const isValidMove = this.checkForValidMove(gameObject);
+        // const dropZoneComp = InputComponent.getComp(dropZone);
+        const isValidMove = this.checkForValidMove(gameObject, dropZone);
         const originalZone = droppedComp?.originalZone;
 
         const cueIdx = originalZone.cards.indexOf(originalZone.cueCard);
@@ -167,9 +167,11 @@ export class InputManager {
                 this.dragEndCleanup(gameObject, originalZone, dropZone)
             })
         }
-        
     }
     dragEndCleanup(gameObject, originalZone, dropZone) {
+        this.isDragging = false;
+        this.draggedObject = null;
+
         if (gameObject) {
             gameObject?.scaleAfterDrag?.();
             const droppedComp = InputComponent.getComp(gameObject);
@@ -187,13 +189,12 @@ export class InputManager {
             dropZone.hideCueCard?.();
             //const dropZoneComp = InputComponent.getComp(dropZone);
         };
-        this.lastOriginalZone = null;
+        // this.lastOriginalZone = null;
         this.lastDropZone = null;
     }
     
-    checkForValidMove(gameObject) {
+    checkForValidMove(gameObject, dropZone) {
         // is zone dropped into is actually a DropZone?
-        const dropZone = this.lastDropZone;
         if (!dropZone) {
             return false;
         }
